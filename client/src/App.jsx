@@ -13,6 +13,7 @@ import PostPage from "./pages/PostPage";
 import About from "./pages/About";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import UserProfile from "./pages/Profile";
 
 function App() {
 
@@ -33,6 +34,8 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/profile" element={<UserProfile />} />
         
 
         <Route
