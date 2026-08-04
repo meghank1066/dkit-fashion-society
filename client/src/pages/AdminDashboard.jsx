@@ -136,15 +136,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filter users based on exact email match requirement and role filter
+  // Filter users: Always show admins, but show regular users only if they match search input
   const filteredUsers = users.filter((u) => {
-    const matchesRole = roleFilter === "all" || (u.role || "user") === roleFilter;
-    
-    // Only reveal users if the search query matches their exact email
-    const matchesExactEmail = userSearchEmail.trim() !== "" && 
-      u.email.toLowerCase() === userSearchEmail.trim().toLowerCase();
+    const role = u.role || "user";
+    const matchesRole = roleFilter === "all" || role === roleFilter;
 
-    return matchesRole && matchesExactEmail;
+    const isAdmin = role === "admin";
+    const isSearchedUser = userSearchEmail.trim() !== "" && 
+      u.email.toLowerCase().includes(userSearchEmail.trim().toLowerCase());
+
+    // Show if they are an admin OR if they match the search query (respecting the role dropdown)
+    return matchesRole && (isAdmin || isSearchedUser);
   });
 
   // Remove HTML from Tiptap preview
@@ -384,7 +386,7 @@ export default function AdminDashboard() {
                 Website Users & Permissions
               </h2>
               <p className="text-gray-500 text-sm mt-1">
-                Search exact email to view records and manage administrator privileges
+                Admins are shown automatically. Search user emails to find standard users.
               </p>
             </div>
 
@@ -393,11 +395,11 @@ export default function AdminDashboard() {
             </span>
           </div>
 
-          {/* CONTROLS: Filter by Role & Exact Email Search constraint */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+          {/* CONTROLS: Filter by Role & Email Search */}
+          <div className="flex flex-col md:flex-row gap-4 mb-2">
             <input
               type="text"
-              placeholder="Search exact email to reveal user..."
+              placeholder="Search exact email to make user an admin..."
               value={userSearchEmail}
               onChange={(e) => setUserSearchEmail(e.target.value)}
               className="flex-1 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
@@ -413,6 +415,11 @@ export default function AdminDashboard() {
               <option value="user">Users Only</option>
             </select>
           </div>
+
+          {/* Contextual Helper Note */}
+          <p className="text-xs text-gray-400 mb-6 italic">
+            Tip: Standard users are hidden by default. Search an exact email above to locate a user and grant admin privileges.
+          </p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -467,9 +474,7 @@ export default function AdminDashboard() {
                 {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan="3" className="text-center py-8 text-gray-400">
-                      {userSearchEmail.trim() === "" 
-                        ? "Type an exact email address above to view user details." 
-                        : "No user matches this exact email and filter criteria."}
+                      No users match the current filter or search criteria.
                     </td>
                   </tr>
                 )}
