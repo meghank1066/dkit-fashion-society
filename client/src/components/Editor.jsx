@@ -1,78 +1,225 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
+import Placeholder from "@tiptap/extension-placeholder";
+import { useRef } from "react";
+import API from "../api/axios";
 
+// CUSTOM IMAGE EXTENSION
+// Put this HERE (outside the component)
 
-export default function Editor({content, setContent}) {
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
 
+      class: {
+        default: "image-center",
 
-const editor = useEditor({
-
-extensions:[
-    StarterKit,
-    Image
-],
-
-
-content,
-
-
-onUpdate:({editor})=>{
-
-    setContent(editor.getHTML());
-
-}
-
-
+        renderHTML: attributes => {
+          return {
+            class: attributes.class,
+          };
+        },
+      },
+    };
+  },
 });
 
+export default function Editor({ content, setContent }) {
+  const fileInput = useRef(null);
 
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit,
 
-return (
+      CustomImage.configure({
+        inline: false,
+        allowBase64: false,
+      }),
 
-<div>
+      Placeholder.configure({
+        placeholder: "Start writing your article...",
+      }),
+    ],
 
-<div className="border p-3 mb-3 flex gap-3">
+    content,
 
+    onUpdate: ({ editor }) => {
+      setContent(editor.getHTML());
+    },
+  });
 
-<button
-onClick={()=>editor.chain().focus().toggleBold().run()}
-className="border px-3"
->
-B
-</button>
+  const uploadEditorImage = async (e) => {
+    const file = e.target.files[0];
 
+    if (!file) return;
 
-<button
-onClick={()=>editor.chain().focus().toggleItalic().run()}
-className="border px-3"
->
-I
-</button>
+    const formData = new FormData();
 
+    formData.append("image", file);
 
-<button
-onClick={()=>editor.chain().focus().toggleHeading({
-level:2
-}).run()}
-className="border px-3"
->
-H2
-</button>
+    try {
+     const res = await API.post(
+  "/upload",
+  formData,
+  {
+    headers:{
+      Authorization:`Bearer ${localStorage.getItem("token")}`,
+      "Content-Type":"multipart/form-data"
+    }
+  }
+);
 
+console.log("Uploaded image:", res.data.url);
 
-</div>
+      editor
+        .chain()
+        .focus()
+        .insertContent([
+          {
+            type: "image",
+            attrs: {
+              src: res.data.url,
+              class: "image-center",
+            },
+          },
+          {
+            type: "paragraph",
+          },
+        ])
+        .run();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  if (!editor) {
+    return null;
+  }
 
-<div className="border p-5 min-h-[300px]">
+  return (
+    <div>
+      {/* TOOLBAR */}
 
-<EditorContent editor={editor}/>
+      <div
+        className="
+border 
+border-gray-200 
+p-3 
+mb-3 
+flex 
+flex-wrap 
+gap-3
+"
+      >
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className="border px-3 py-1"
+        >
+          B
+        </button>
 
-</div>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className="border px-3 py-1"
+        >
+          I
+        </button>
 
+        <button
+          type="button"
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .toggleHeading({
+                level: 2,
+              })
+              .run()
+          }
+          className="border px-3 py-1"
+        >
+          H2
+        </button>
 
-</div>
+        {/* UPLOAD IMAGE */}
 
-)
+        <button
+          type="button"
+         onClick={() => fileInput.current?.click()}
+          className="border px-3 py-1"
+        >
+          Add Image
+        </button>
 
+        <input
+  ref={fileInput}
+  type="file"
+  accept="image/*"
+  hidden
+  onChange={uploadEditorImage}
+/>
+
+        {/* IMAGE ALIGNMENT */}
+
+        <button
+          type="button"
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("image", {
+                class: "image-left",
+              })
+              .run()
+          }
+          className="border px-3 py-1"
+        >
+          ← Left
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("image", {
+                class: "image-center",
+              })
+              .run()
+          }
+          className="border px-3 py-1"
+        >
+          Center
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            editor
+              .chain()
+              .focus()
+              .updateAttributes("image", {
+                class: "image-right",
+              })
+              .run()
+          }
+          className="border px-3 py-1"
+        >
+          Right →
+        </button>
+      </div>
+
+      <div
+        className="bg-white min-h-[600px] px-8 py-10 prose prose-lg max-w-none "
+      >
+        <EditorContent editor={editor} />
+      </div>
+    </div>
+  );
 }

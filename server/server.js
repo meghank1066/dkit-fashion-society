@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 
 dotenv.config();
@@ -19,13 +20,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// uploads
+app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/posts", postRoutes);
-
+app.use("/api/upload", uploadRoutes);
 
 // Test route
 app.get("/", (req,res)=>{
