@@ -5,29 +5,57 @@ import API from "../api/axios";
 export default function Home() {
 
   const [posts, setPosts] = useState([]);
+  const [events, setEvents] = useState([]);
+const [articles, setArticles] = useState([]);
 
 
   useEffect(() => {
 
-    const fetchPosts = async () => {
+  const fetchPosts = async () => {
 
-      try {
+    try {
 
-        const res = await API.get("/posts");
+      const res = await API.get("/posts");
 
-        setPosts(res.data.slice(0, 3));
+      const allPosts = res.data;
 
-      } catch (error) {
 
-        console.log(error);
+      // Events block
+      setEvents(
+        allPosts.filter(
+          post => post.category === "event"
+        )
+      );
 
-      }
 
-    };
+      // Fashion / Makeup journal block
+      setArticles(
+        allPosts.filter(
+          post =>
+            post.category === "fashion" ||
+            post.category === "makeup"
+        )
+      );
 
-    fetchPosts();
 
-  }, []);
+      // Optional: newest posts overall
+      setPosts(
+        allPosts.slice(0,3)
+      );
+
+
+    } catch(error){
+
+      console.log(error);
+
+    }
+
+  };
+
+
+  fetchPosts();
+
+}, []);
 
 
 
@@ -61,78 +89,52 @@ export default function Home() {
 
 
       {/* Latest Events / Journal Posts */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+    <section className="max-w-6xl mx-auto px-6 py-20">
+
+<h2 className="text-4xl font-bold mb-10">
+Upcoming Events
+</h2>
 
 
-        <div className="flex justify-between items-center mb-10">
+<div className="grid md:grid-cols-3 gap-8">
 
-          <div>
+{
+events.slice(0,3).map((post)=>(
 
-            <h2 className="text-4xl font-bold">
-              Latest Events & Journal
-            </h2>
+<Link
+key={post._id}
+to={`/posts/${post._id}`}
+className="rounded-3xl shadow-lg overflow-hidden"
+>
 
-            <p className="text-gray-500 mt-2">
-              Discover what DKIT Fashion Society has been creating.
-            </p>
-
-          </div>
-
-
-          <Link
-            to="/posts"
-            className="font-semibold underline"
-          >
-            View All
-          </Link>
-
-        </div>
+<img
+src={post.coverImage}
+alt={post.title}
+className="w-full h-64 object-cover"
+/>
 
 
+<div className="p-6">
 
-        <div className="grid md:grid-cols-3 gap-8">
+<h3 className="text-xl font-bold">
+{post.title}
+</h3>
 
+<p className="text-gray-500">
+{post.subtitle}
+</p>
 
-          {posts.map((post) => (
+</div>
 
-            <Link
-              key={post.id}
-              to={`/posts/${post.id}`}
-              className="rounded-3xl shadow-lg overflow-hidden hover:-translate-y-2 transition"
-            >
+</Link>
 
-              <img
-                src={post.coverImage}
-                alt={post.title}
-                className="w-full h-64 object-cover"
-              />
+))
 
+}
 
-              <div className="p-6">
+</div>
 
-                <h3 className="text-xl font-bold">
-                  {post.title}
-                </h3>
-
-
-                <p className="text-gray-500 mt-3">
-                  {post.excerpt}
-                </p>
-
-
-              </div>
-
-
-            </Link>
-
-          ))}
-
-
-        </div>
-
-
-      </section>
-
+</section>
 
 
 
@@ -156,49 +158,46 @@ export default function Home() {
 
 
 
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
+
+{
+articles.slice(0,3).map((post)=>(
+
+<Link
+key={post._id}
+to={`/posts/${post._id}`}
+className="bg-white rounded-3xl overflow-hidden shadow"
+>
 
 
-            <div className="bg-white rounded-3xl p-8">
-
-              <h3 className="font-bold text-xl mb-3">
-                Coming Soon
-              </h3>
-
-              <p className="text-gray-600">
-                Student fashion features and creative articles will appear here.
-              </p>
-
-            </div>
+<img
+src={post.coverImage}
+className="w-full h-56 object-cover"
+/>
 
 
-            <div className="bg-white rounded-3xl p-8">
+<div className="p-6">
 
-              <h3 className="font-bold text-xl mb-3">
-                Style Inspiration
-              </h3>
-
-              <p className="text-gray-600">
-                Discover trends, ideas, and fashion discussions.
-              </p>
-
-            </div>
+<h3 className="font-bold text-xl">
+{post.title}
+</h3>
 
 
-            <div className="bg-white rounded-3xl p-8">
-
-              <h3 className="font-bold text-xl mb-3">
-                Behind The Scenes
-              </h3>
-
-              <p className="text-gray-600">
-                See the creative process behind society projects.
-              </p>
-
-            </div>
+<p className="text-gray-500 mt-2">
+{post.subtitle}
+</p>
 
 
-          </div>
+</div>
+
+
+</Link>
+
+))
+
+}
+
+</div>
 
 
         </div>

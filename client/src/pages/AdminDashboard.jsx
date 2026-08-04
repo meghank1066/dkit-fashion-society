@@ -232,15 +232,26 @@ className="w-full border p-3 mb-4"
 Announcement
 </option>
 
-
 <option value="event">
 Event
 </option>
 
-
 <option value="fashion">
 Fashion
 </option>
+
+<option value="makeup">
+Makeup
+</option>
+
+<option value="lifestyle">
+Lifestyle
+</option>
+
+<option value="editorial">
+Editorial
+</option>
+
 
 
 </select>
