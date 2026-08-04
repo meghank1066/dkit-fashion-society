@@ -345,7 +345,7 @@ export default function Home() {
       Photoshoot Editorials
     </h2>
     <p className="text-gray-500 text-base md:text-lg font-light leading-relaxed">
-      Showcasing student creativity through styling, photography, and high-fashion storytelling.
+      Showcasing student creativity through styling, photography and high-fashion storytelling.
     </p>
   </div>
 
@@ -371,7 +371,7 @@ export default function Home() {
 
       {/* Description */}
       <p className="text-gray-300 font-light text-base md:text-lg leading-relaxed max-w-lg">
-        Editorial shoots, creative collaborations, and featured student work will be announced throughout the academic year.
+        Editorial shoots, creative collaborations and featured student work will be announced throughout the academic year.
       </p>
 
     </div>
@@ -593,18 +593,18 @@ export default function Home() {
     </a>
 
     <a
-      href="#"
+      href="https://forms.gle/DxVXfXR5DLojWtkg6"
       className="text-[#011145] hover:opacity-70 transition-all duration-200"
     >
-      Sign Up
+      REGISTRATION 26/27
     </a>
 
-    <a
+    {/* <a
       href="#"
       className="text-[#011145] hover:opacity-70 transition-all duration-200"
     >
       WhatsApp
-    </a>
+    </a> */}
 
   </div>
 

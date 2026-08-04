@@ -2,49 +2,78 @@ import React, { useState, useEffect } from "react";
 
 export default function About() {
   // 1. Dynamic State for Committee Sections
-  const [committees, setCommittees] = useState([
-    {
-      id: "2025-2026",
-      title: "Academic Year 2025 – 2026",
-      members: [
-        {
-          name: "Meghan Keightley",
-          role: "Founder & Chairperson",
-          image: "/images/webdesign/members/meghan26.jpg",
-        },
-        {
-          name: "Mila Murphy",
-          role: "Committee Member",
-          image: "/images/webdesign/members/mila26.jpg",
-        },
-        {
-          name: "Caren Rita Pinheiro",
-          role: "Committee Member",
-          image: "/images/webdesign/members/caren26.jpg",
-        },
-        {
-          name: "Amber Dempsey",
-          role: "Committee Member",
-          image: "/images/webdesign/members/amber26.jpg",
-        },
-      ],
-    },
-  ]);
+  const [committees, setCommittees] = useState(() => {
+    // Check localStorage synchronously on initial state evaluation to prevent flash/overwrite
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("committees");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Failed to parse saved committees", e);
+        }
+      }
+    }
+    return [
+      {
+        id: "2025-2026",
+        title: "Academic Year 2025 – 2026",
+        members: [
+          {
+            name: "Meghan Keightley",
+            role: "Founder & Chairperson",
+            image: "/images/webdesign/members/meghan26.jpg",
+          },
+          {
+            name: "Mila Murphy",
+            role: "Committee Member",
+            image: "/images/webdesign/members/mila26.jpg",
+          },
+          {
+            name: "Caren Rita Pinheiro",
+            role: "Committee Member",
+            image: "/images/webdesign/members/caren26.jpg",
+          },
+          {
+            name: "Amber Dempsey",
+            role: "Committee Member",
+            image: "/images/webdesign/members/amber26.jpg",
+          },
+        ],
+      },
+    ];
+  });
 
   // Admin state controls
-const [isAdmin, setIsAdmin] = useState(false);
-
-useEffect(() => {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  if (user?.role === "admin") {
-    setIsAdmin(true);
-  }
-}, []);
-
+  const [isAdmin, setIsAdmin] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("Academic Year 2026 – 2027");
+  const [saveNotification, setSaveNotification] = useState(false);
 
-  // Function: Delete Section (Panel)
+  // Check admin access
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user?.role === "admin") {
+        setIsAdmin(true);
+      }
+    } catch (err) {
+      console.error("Error reading user from localStorage", err);
+    }
+  }, []);
+
+  // Save changes automatically whenever `committees` state updates
+  useEffect(() => {
+    localStorage.setItem("committees", JSON.stringify(committees));
+  }, [committees]);
+
+  // Manual save trigger to provide user feedback
+  const handleSaveToLocalStorage = () => {
+    localStorage.setItem("committees", JSON.stringify(committees));
+    setSaveNotification(true);
+    setTimeout(() => setSaveNotification(false), 3000);
+  };
+
+  // Function: Delete Section
   const handleDeleteSection = (sectionId) => {
     if (window.confirm("Are you sure you want to delete this section?")) {
       setCommittees((prev) => prev.filter((sec) => sec.id !== sectionId));
@@ -73,21 +102,28 @@ useEffect(() => {
     setNewSectionTitle("");
   };
 
-  // Function: Upload New Image to Member
+  // Function: Upload New Image to Member (Converted to Base64 to persist)
   const handleImageUpload = (e, sectionId, memberIndex) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setCommittees((prev) =>
-        prev.map((sec) => {
-          if (sec.id === sectionId) {
-            const updatedMembers = [...sec.members];
-            updatedMembers[memberIndex].image = imageUrl;
-            return { ...sec, members: updatedMembers };
-          }
-          return sec;
-        })
-      );
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Image = reader.result;
+        setCommittees((prev) =>
+          prev.map((sec) => {
+            if (sec.id === sectionId) {
+              const updatedMembers = [...sec.members];
+              updatedMembers[memberIndex] = {
+                ...updatedMembers[memberIndex],
+                image: base64Image,
+              };
+              return { ...sec, members: updatedMembers };
+            }
+            return sec;
+          })
+        );
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -132,7 +168,10 @@ useEffect(() => {
       prev.map((sec) => {
         if (sec.id === sectionId) {
           const updatedMembers = [...sec.members];
-          updatedMembers[memberIndex][field] = value;
+          updatedMembers[memberIndex] = {
+            ...updatedMembers[memberIndex],
+            [field]: value,
+          };
           return { ...sec, members: updatedMembers };
         }
         return sec;
@@ -143,12 +182,20 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased">
       {/* --- Admin Toggle Header Bar --- */}
-  {isAdmin && (
-  <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex items-center shadow-lg text-sm font-medium">
-    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
-    DKIT Fashion Society - Admin Dashboard
-  </div>
-)}
+      {isAdmin && (
+        <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex items-center justify-between shadow-lg text-sm font-medium">
+          <div className="flex items-center">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+            DKIT Fashion Society - Admin Dashboard
+          </div>
+          <button
+            onClick={handleSaveToLocalStorage}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition shadow"
+          >
+            {saveNotification ? "✓ Saved!" : "💾 Save Changes"}
+          </button>
+        </div>
+      )}
 
       {/* --- Main Admin Control Panel --- */}
       {isAdmin && (
@@ -162,9 +209,9 @@ useEffect(() => {
                 Active
               </span>
             </div>
-            
+
             <p className="text-xs text-indigo-700">
-              Create a new empty section or copy an existing year's panel below. You can also delete sections or individual member cards.
+              Create a new empty section or copy an existing year's panel below. All changes automatically persist.
             </p>
 
             <div className="flex flex-wrap gap-3 items-center pt-2">
