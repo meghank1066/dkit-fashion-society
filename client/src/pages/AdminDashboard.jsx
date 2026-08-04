@@ -17,6 +17,10 @@ export default function AdminDashboard() {
 
   const [editingPost, setEditingPost] = useState(null);
 
+  // New states for user filtering and precise email search constraint
+  const [userSearchEmail, setUserSearchEmail] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all"); // "all", "admin", "user"
+
   const token = localStorage.getItem("token");
 
   const config = {
@@ -34,9 +38,9 @@ export default function AdminDashboard() {
     }
   };
 
- const fetchUsers = async () => {
+  const fetchUsers = async () => {
     try {
-      const res = await API.get("/users", config); // Changed from "/api/users" to "/users"
+      const res = await API.get("/users", config);
       setUsers(res.data);
     } catch (err) {
       console.log(err);
@@ -107,20 +111,41 @@ export default function AdminDashboard() {
     fetchPosts();
   };
 
-  
-
   const toggleAdminRole = async (userId, currentRole) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
     if (!window.confirm(`Change user role to ${newRole}?`)) return;
 
     try {
-      await API.put(`/users/${userId}/role`, { role: newRole }, config); // Changed from "/api/users..." to "/users..."
+      await API.put(`/users/${userId}/role`, { role: newRole }, config);
       fetchUsers();
     } catch (err) {
       console.log(err);
       alert("Failed to update user role.");
     }
   };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to completely delete this user?")) return;
+
+    try {
+      await API.delete(`/users/${userId}`, config);
+      fetchUsers();
+    } catch (err) {
+      console.log(err);
+      alert("Failed to delete user.");
+    }
+  };
+
+  // Filter users based on exact email match requirement and role filter
+  const filteredUsers = users.filter((u) => {
+    const matchesRole = roleFilter === "all" || (u.role || "user") === roleFilter;
+    
+    // Only reveal users if the search query matches their exact email
+    const matchesExactEmail = userSearchEmail.trim() !== "" && 
+      u.email.toLowerCase() === userSearchEmail.trim().toLowerCase();
+
+    return matchesRole && matchesExactEmail;
+  });
 
   // Remove HTML from Tiptap preview
   const getExcerpt = (html) => {
@@ -359,13 +384,34 @@ export default function AdminDashboard() {
                 Website Users & Permissions
               </h2>
               <p className="text-gray-500 text-sm mt-1">
-                View registered users and manage administrator privileges
+                Search exact email to view records and manage administrator privileges
               </p>
             </div>
 
             <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-full font-semibold">
-              {users.length} Users Registered
+              {users.length} Total Users in System
             </span>
+          </div>
+
+          {/* CONTROLS: Filter by Role & Exact Email Search constraint */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <input
+              type="text"
+              placeholder="Search exact email to reveal user..."
+              value={userSearchEmail}
+              onChange={(e) => setUserSearchEmail(e.target.value)}
+              className="flex-1 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+            />
+
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+            >
+              <option value="all">All Roles</option>
+              <option value="admin">Admins Only</option>
+              <option value="user">Users Only</option>
+            </select>
           </div>
 
           <div className="overflow-x-auto">
@@ -378,7 +424,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <tr key={u._id} className="hover:bg-gray-50/80 transition">
                     <td className="py-4 px-4">
                       <div className="font-medium text-[#011145]">
@@ -397,7 +443,7 @@ export default function AdminDashboard() {
                         {u.role || "user"}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-4 px-4 text-right space-x-2">
                       <button
                         onClick={() => toggleAdminRole(u._id, u.role)}
                         className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
@@ -408,13 +454,22 @@ export default function AdminDashboard() {
                       >
                         {u.role === "admin" ? "Demote to User" : "Make Admin"}
                       </button>
+
+                      <button
+                        onClick={() => deleteUser(u._id)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-700 transition"
+                      >
+                        Delete User
+                      </button>
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan="3" className="text-center py-8 text-gray-400">
-                      No users found.
+                      {userSearchEmail.trim() === "" 
+                        ? "Type an exact email address above to view user details." 
+                        : "No user matches this exact email and filter criteria."}
                     </td>
                   </tr>
                 )}
