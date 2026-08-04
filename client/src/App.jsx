@@ -11,7 +11,8 @@ import Posts from "./pages/Posts";
 import ChangePassword from "./pages/ChangePassword";
 import PostPage from "./pages/PostPage";
 import About from "./pages/About";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
 
@@ -30,6 +31,8 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         
 
         <Route
@@ -58,7 +61,8 @@ element={<Posts />}
 path="/posts/:id" 
 element={<PostPage />}
 />
-
+<Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
 
     </BrowserRouter>

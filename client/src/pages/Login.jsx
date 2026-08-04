@@ -1,6 +1,6 @@
 import { useState } from "react";
 import API from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -10,7 +10,6 @@ export default function Login() {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
-
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
@@ -37,7 +36,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f5f0] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f8f5f0] flex items-center justify-center px-4">
       <form
         onSubmit={handleLogin}
         className="bg-white p-10 w-full max-w-md shadow-lg"
@@ -49,7 +48,7 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-3 mb-4"
+          className="w-full border p-3 mb-4 focus:outline-none focus:border-black"
           required
         />
 
@@ -58,15 +57,39 @@ export default function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-3 mb-6"
+          className="w-full border p-3 mb-2 focus:outline-none focus:border-black"
           required
         />
 
-        <button className="w-full bg-black text-white py-3 hover:bg-gray-800 transition">
+        <div className="text-right mb-6">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-gray-600 hover:text-black hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-black text-white py-3 hover:bg-gray-800 transition"
+        >
           Login
         </button>
 
-        {message && <p className="mt-5 text-center">{message}</p>}
+        <button
+          type="button"
+          onClick={() => navigate("/register")}
+          className="w-full mt-3 border border-black py-3 hover:bg-black hover:text-white transition"
+        >
+          Register
+        </button>
+
+        {message && (
+          <p className="mt-5 text-center text-gray-700">
+            {message}
+          </p>
+        )}
       </form>
     </div>
   );

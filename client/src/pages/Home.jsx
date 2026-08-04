@@ -94,9 +94,6 @@ export default function Home() {
       </section>
 
 
-
-
-
       {/* EVENTS */}
 
       <section className="max-w-6xl mx-auto px-6 py-20">
@@ -175,11 +172,6 @@ export default function Home() {
 
 
       </section>
-
-
-
-
-
 
 
       {/* JOURNAL */}
@@ -338,12 +330,6 @@ export default function Home() {
 
       </section>
 
-
-
-
-
-
-
       {/* EDITORIALS */}
 
       <section className="max-w-6xl mx-auto px-6 py-20 text-center">
@@ -379,11 +365,6 @@ export default function Home() {
 
 
       </section>
-
-
-
-
-
 
 
       {/* WHAT WE OFFER */}
@@ -452,15 +433,9 @@ export default function Home() {
 
       </section>
 
-
-
-
-
-
-
       {/* MEMBERSHIP */}
 
-      <section className="bg-black text-white py-20 text-center">
+      {/* <section className="bg-black text-white py-20 text-center">
 
 
         <div className="max-w-4xl mx-auto px-6">
@@ -484,32 +459,68 @@ export default function Home() {
         </div>
 
 
-      </section>
+      </section> */}
 
+     {/* FOOTER */}
 
+<footer className="bg-white text-[#011145] py-12 text-center border-t border-gray-200">
 
+  {/* Logo / Header */}
+ <div className="mb-8 flex justify-center">
+    <Link to="/">
+      <img 
+        src="/images/webdesign/logo/logonavy-rm.png" 
+        alt="DKIT Fashion Society Logo" 
+        className="h-16 w-auto object-contain transition-all hover:opacity-90"
+      />
+    </Link>
+  </div>
 
+  <div className="border-t border-gray-200 max-w-4xl mx-auto mb-8"></div>
 
+  {/* Links */}
+  <div className="flex flex-wrap justify-center gap-8 text-sm uppercase tracking-widest mb-8 font-medium">
 
+    <a
+      href="https://www.instagram.com/dkitfashionsociety"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#011145] hover:opacity-70 transition-all duration-200"
+    >
+      Instagram
+    </a>
 
+    <a
+      href="https://www.dkit.ie/sports-and-societies"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[#011145] hover:opacity-70 transition-all duration-200"
+    >
+      DKIT Sports & Societies
+    </a>
 
-      {/* FOOTER */}
+    <a
+      href="#"
+      className="text-[#011145] hover:opacity-70 transition-all duration-200"
+    >
+      Sign Up
+    </a>
 
-      <footer className="bg-gray-950 text-gray-400 py-10 text-center">
+    <a
+      href="#"
+      className="text-[#011145] hover:opacity-70 transition-all duration-200"
+    >
+      WhatsApp
+    </a>
 
+  </div>
 
-        <h3 className="text-white text-xl font-bold mb-3">
-          DKIT Fashion Society
-        </h3>
+  {/* Copyright */}
+  <p className="text-xs mt-6 text-[#011145]/60">
+    © {new Date().getFullYear()} DKIT Fashion Society. All rights reserved.
+  </p>
 
-
-        <p>
-          Fashion • Creativity • Community
-        </p>
-
-
-      </footer>
-
+</footer>
 
 
     </div>
