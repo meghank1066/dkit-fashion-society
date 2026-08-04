@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function About() {
   // 1. Dynamic State for Committee Sections
@@ -32,7 +32,16 @@ export default function About() {
   ]);
 
   // Admin state controls
-  const [isAdmin, setIsAdmin] = useState(false);
+const [isAdmin, setIsAdmin] = useState(false);
+
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user?.role === "admin") {
+    setIsAdmin(true);
+  }
+}, []);
+
   const [newSectionTitle, setNewSectionTitle] = useState("Academic Year 2026 – 2027");
 
   // Function: Delete Section (Panel)
@@ -134,18 +143,12 @@ export default function About() {
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased">
       {/* --- Admin Toggle Header Bar --- */}
-      <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex justify-between items-center shadow-lg text-sm font-medium">
-        <div className="flex items-center gap-2">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>DKIT Fashion Society - Admin Dashboard</span>
-        </div>
-        <button
-          onClick={() => setIsAdmin(!isAdmin)}
-          className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-xl text-white font-semibold transition shadow-sm"
-        >
-          {isAdmin ? "Exit Admin Mode" : "Admin Panel Mode"}
-        </button>
-      </div>
+  {isAdmin && (
+  <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex items-center shadow-lg text-sm font-medium">
+    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+    DKIT Fashion Society - Admin Dashboard
+  </div>
+)}
 
       {/* --- Main Admin Control Panel --- */}
       {isAdmin && (
