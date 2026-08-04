@@ -55,8 +55,6 @@ export const createPost = async (req, res) => {
 
 
 
-
-
 export const getPosts = async (req, res) => {
 
     try {
@@ -88,9 +86,43 @@ export const getPosts = async (req, res) => {
 
 };
 
+export const getPost = async(req,res)=>{
+
+    try{
+
+        console.log("Searching for post ID:", req.params.id);
 
 
+        const post = await Post.findById(req.params.id)
+            .populate("author","username");
 
+
+        console.log("Found post:", post);
+
+
+        if(!post){
+
+            return res.status(404).json({
+                message:"Post not found"
+            });
+
+        }
+
+
+        res.json(post);
+
+
+    }catch(error){
+
+        console.log(error);
+
+        res.status(500).json({
+            message:error.message
+        });
+
+    }
+
+};
 
 
 
@@ -165,12 +197,6 @@ export const updatePost = async (req, res) => {
 
 };
 
-
-
-
-
-
-
 export const deletePost = async (req,res)=>{
 
     try {
@@ -217,3 +243,4 @@ export const deletePost = async (req,res)=>{
     }
 
 };
+

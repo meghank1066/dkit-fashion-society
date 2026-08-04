@@ -9,6 +9,8 @@ import AdminRoute from "./components/AdminRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Posts from "./pages/Posts";
 import ChangePassword from "./pages/ChangePassword";
+import PostPage from "./pages/PostPage";
+import About from "./pages/About";
 
 
 function App() {
@@ -23,9 +25,12 @@ function App() {
 
         <Route path="/" element={<Home />} />
 
+         <Route path="/about" element={<About />} />
+
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+        
 
         <Route
           path="/admin"
@@ -44,11 +49,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+<Route
+path="/posts"
+element={<Posts />}
+/>
 
-        <Route
-          path="/posts"
-          element={<Posts />}
-        />
+<Route 
+path="/posts/:id" 
+element={<PostPage />}
+/>
 
       </Routes>
 

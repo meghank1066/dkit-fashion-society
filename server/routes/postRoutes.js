@@ -1,18 +1,26 @@
 import express from "express";
 import protect from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
-import { 
-    createPost, 
-    getPosts, 
-    updatePost, 
-    deletePost 
+
+import {
+    createPost,
+    getPosts,
+    getPost,
+    updatePost,
+    deletePost
 } from "../controllers/postController.js";
+
 
 const router = express.Router();
 
 
+// PUBLIC
 router.get("/", getPosts);
 
+router.get("/:id", getPost);
+
+
+// ADMIN
 router.post(
     "/",
     protect,
@@ -20,12 +28,14 @@ router.post(
     createPost
 );
 
+
 router.put(
     "/:id",
     protect,
     adminOnly,
     updatePost
 );
+
 
 router.delete(
     "/:id",
