@@ -19,40 +19,154 @@ export default function Posts() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [filter, setFilter] = useState("all"); // 'all' | 'active' | 'archived' | 'featured'
 
+  // Dynamic Sections Management State
+  const [sections, setSections] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("post_sections");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error("Failed to parse saved sections", e);
+        }
+      }
+    }
+    return [
+      { id: "featured", title: "Featured Posts", isSystem: true },
+      { id: "uncategorized", title: "All Posts", isSystem: true },
+    ];
+  });
+
+  const [newSectionTitle, setNewSectionTitle] = useState("");
+  const [editingSectionId, setEditingSectionId] = useState(null);
+  const [editingTitleText, setEditingTitleText] = useState("");
+  const [saveNotification, setSaveNotification] = useState(false);
+
+  // Drag-and-drop state
+  const [draggedCard, setDraggedCard] = useState(null); // { sectionId, index }
+
   // Fetch initial posts
   useEffect(() => {
     fetchPosts();
   }, []);
 
+  // Save sections to local storage whenever updated
+  useEffect(() => {
+    localStorage.setItem("post_sections", JSON.stringify(sections));
+  }, [sections]);
+
   const fetchPosts = () => {
     setLoading(true);
     API.get("/posts")
       .then((res) => {
-        setPosts(res.data);
+        const mapped = res.data.map((p) => ({
+          ...p,
+          sectionId: p.sectionId || (p.isFeatured ? "featured" : "uncategorized"),
+        }));
+        setPosts(mapped);
       })
       .catch((err) => console.error("Error fetching posts:", err))
       .finally(() => setLoading(false));
   };
 
-  // --- Admin Handler Functions ---
+  // --- Dynamic Section Handlers ---
 
-  // 1. Toggle Featured Status
-  const handleToggleFeatured = async (postId, currentFeatured) => {
-    try {
-      // Optimistic update
+  const handleCreateSection = () => {
+    if (!newSectionTitle.trim()) return alert("Please enter a section title!");
+    const sectionId = newSectionTitle.toLowerCase().replace(/[^a-z0-9]/g, "-");
+
+    if (sections.some((s) => s.id === sectionId)) {
+      return alert("A section with this title or key already exists.");
+    }
+
+    const newSec = {
+      id: sectionId,
+      title: newSectionTitle.trim(),
+      isSystem: false,
+    };
+
+    setSections((prev) => [...prev, newSec]);
+    setNewSectionTitle("");
+  };
+
+  const handleDeleteSection = (sectionId) => {
+    if (window.confirm("Are you sure you want to delete this section? Posts in it will move to All Posts.")) {
+      setSections((prev) => prev.filter((s) => s.id !== sectionId));
       setPosts((prev) =>
         prev.map((p) =>
-          p._id === postId ? { ...p, isFeatured: !currentFeatured } : p
+          p.sectionId === sectionId ? { ...p, sectionId: "uncategorized" } : p
         )
       );
-      await API.patch(`/posts/${postId}`, { isFeatured: !currentFeatured });
-    } catch (err) {
-      console.error("Failed to update featured status:", err);
-      fetchPosts(); // Rollback on error
     }
   };
 
-  // 2. Toggle Archive Status
+  const handleStartRenameSection = (sec) => {
+    setEditingSectionId(sec.id);
+    setEditingTitleText(sec.title);
+  };
+
+  const handleSaveRenameSection = (sectionId) => {
+    if (!editingTitleText.trim()) return;
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, title: editingTitleText.trim() } : s))
+    );
+    setEditingSectionId(null);
+  };
+
+  const handleSaveSections = () => {
+    localStorage.setItem("post_sections", JSON.stringify(sections));
+    setSaveNotification(true);
+    setTimeout(() => setSaveNotification(false), 3000);
+  };
+
+  // --- Admin Post Actions ---
+
+  const handleToggleFeatured = async (postId, currentFeatured) => {
+    const nextFeatured = !currentFeatured;
+    try {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                isFeatured: nextFeatured,
+              }
+            : p
+        )
+      );
+      await API.patch(`/posts/${postId}`, {
+        isFeatured: nextFeatured,
+      });
+    } catch (err) {
+      console.error("Failed to update featured status:", err);
+      fetchPosts();
+    }
+  };
+
+  const handleAssignSection = async (postId, newSectionId) => {
+    const isNowFeatured = newSectionId === "featured" ? true : undefined;
+    try {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? {
+                ...p,
+                sectionId: newSectionId,
+                ...(newSectionId === "featured" ? { isFeatured: true } : {}),
+              }
+            : p
+        )
+      );
+      await API.patch(`/posts/${postId}`, {
+        sectionId: newSectionId,
+        ...(newSectionId === "featured" ? { isFeatured: true } : {}),
+      });
+    } catch (err) {
+      console.error("Failed to assign section:", err);
+      fetchPosts();
+    }
+  };
+
   const handleToggleArchive = async (postId, currentArchived) => {
     try {
       setPosts((prev) =>
@@ -67,7 +181,6 @@ export default function Posts() {
     }
   };
 
-  // 3. Delete Post
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to permanently delete this post?"))
       return;
@@ -80,12 +193,10 @@ export default function Posts() {
     }
   };
 
-  // 4. Update Post Cover Photo
   const handlePostImageUpload = async (e, postId) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Create local preview immediately
     const tempUrl = URL.createObjectURL(file);
     setPosts((prev) =>
       prev.map((p) =>
@@ -93,7 +204,6 @@ export default function Posts() {
       )
     );
 
-    // Prepare upload payload
     const formData = new FormData();
     formData.append("coverPhoto", file);
 
@@ -106,16 +216,46 @@ export default function Posts() {
     }
   };
 
-  // 5. Hero Cover Photo Change
   const handleHeroImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setHeroImage(URL.createObjectURL(file));
-      // Optional: API.post('/page-settings/posts-hero', formData)
     }
   };
 
-  // --- Filtering Posts for Display ---
+  // --- Drag and Drop Handlers ---
+  const handleDragStart = (e, sectionId, index) => {
+    setDraggedCard({ sectionId, index });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e, targetSectionId, targetIndex) => {
+    e.preventDefault();
+    if (!draggedCard) return;
+
+    const { sectionId: sourceSectionId, index: sourceIndex } = draggedCard;
+
+    if (sourceSectionId === targetSectionId && sourceIndex !== targetIndex) {
+      const sectionPosts = filteredPosts.filter((p) => 
+        targetSectionId === "featured" ? p.isFeatured : p.sectionId === targetSectionId
+      );
+      const otherPosts = posts.filter((p) => !sectionPosts.includes(p));
+
+      const updatedSectionPosts = [...sectionPosts];
+      const [movedPost] = updatedSectionPosts.splice(sourceIndex, 1);
+      updatedSectionPosts.splice(targetIndex, 0, movedPost);
+
+      setPosts([...otherPosts, ...updatedSectionPosts]);
+    }
+    setDraggedCard(null);
+  };
+
+  // --- Filtering Logic ---
   const filteredPosts = posts.filter((post) => {
     if (filter === "active") return !post.isArchived;
     if (filter === "archived") return post.isArchived;
@@ -125,49 +265,75 @@ export default function Posts() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased">
-      {/* --- Sticky Admin Bar (Only Visible to Logged In Admins) --- */}
+      {/* --- Sticky Admin Bar --- */}
       {isAdminUser && (
         <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-lg text-sm font-medium">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
             <span>DKIT Fashion Society - Admin Dashboard</span>
           </div>
-          <button
-            onClick={() => setIsAdminMode(!isAdminMode)}
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-xl text-white font-semibold transition shadow-sm"
-          >
-            {isAdminMode ? "Exit Admin Mode" : "Admin Panel Mode"}
-          </button>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={handleSaveSections}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition shadow-sm"
+            >
+              {saveNotification ? "✓ Layout Saved!" : "➢ Save Layout"}
+            </button>
+            <button
+              onClick={() => setIsAdminMode(!isAdminMode)}
+              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-xl text-white font-semibold transition shadow-sm text-xs"
+            >
+              {isAdminMode ? "Exit Admin Mode" : "Admin Panel Mode"}
+            </button>
+          </div>
         </div>
       )}
 
       {/* --- Admin Control Dashboard Panel --- */}
       {isAdminUser && isAdminMode && (
         <div className="max-w-7xl mx-auto my-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-indigo-50/90 border border-indigo-200/80 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm space-y-4">
+          <div className="bg-indigo-50/90 border border-indigo-200/80 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-base sm:text-lg font-bold text-indigo-950 flex items-center gap-2">
-                ⚙️ Posts Admin Management
+                ⚙️ Posts & Section Management Dashboard
               </h3>
               <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">
                 Active
               </span>
             </div>
 
-            <p className="text-xs text-indigo-700">
-              Filter posts below to manage visibility, feature posts on the
-              main feed, update cover photos, or archive/delete outdated posts.
-            </p>
+            {/* Create Section Control */}
+            <div className="space-y-2 border-b border-indigo-200/60 pb-5">
+              <label className="text-xs font-bold text-indigo-900 uppercase tracking-wider block">
+                Add New Content Section / Category Column
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="text"
+                  placeholder='e.g., "Lifestyle", "Fashion Week 2026", "Highlights"'
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  className="flex-1 min-w-[240px] px-3.5 py-2 bg-white border border-indigo-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                />
+                <button
+                  onClick={handleCreateSection}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-sm"
+                >
+                  + Add Section
+                </button>
+              </div>
+            </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
+            {/* Filter View Selector with Preserved Custom Emojis */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
               <span className="text-xs font-semibold text-indigo-900 w-full sm:w-auto">
                 Filter View:
               </span>
               {[
                 { label: "All Posts", value: "all" },
-                { label: "Active", value: "active" },
-                { label: "Featured ⭐", value: "featured" },
-                { label: "Archived 📦", value: "archived" },
+                { label: "Active  📽", value: "active" },
+                { label: "Featured  ★", value: "featured" },
+                { label: "Archived 𓍢ִ໋🀦", value: "archived" },
               ].map((tab) => (
                 <button
                   key={tab.value}
@@ -200,15 +366,13 @@ export default function Posts() {
             Society Posts & News
           </h1>
           <p className="text-sm sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed px-2">
-            Stay updated with the latest news, announcements, creative
-            projects, and event highlights from the DKIT Fashion Society.
+            Stay updated with the latest news, announcements, creative projects, and event highlights from the DKIT Fashion Society.
           </p>
 
-          {/* Admin Hero Image Change Button */}
           {isAdminUser && isAdminMode && (
             <div className="pt-4">
               <label className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition">
-                <span>📷 Edit Hero Cover Photo</span>
+                <span> 📷 Edit Hero Cover Photo</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -221,17 +385,15 @@ export default function Posts() {
         </div>
       </section>
 
-      {/* --- Main Content --- */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14 md:py-16">
+      {/* --- Main Content (Sections & Posts Columns) --- */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-14 md:py-16 space-y-16">
         {loading ? (
           <div className="text-center py-20 text-gray-500 font-medium">
             Loading society posts...
           </div>
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm max-w-lg mx-auto">
-            <p className="text-lg font-semibold text-gray-600">
-              No posts found.
-            </p>
+            <p className="text-lg font-semibold text-gray-600">No posts found.</p>
             <p className="text-sm text-gray-400 mt-1">
               {filter !== "all"
                 ? `No posts matching the '${filter}' filter.`
@@ -239,84 +401,190 @@ export default function Posts() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredPosts.map((post) => (
-              <div
-                key={post._id}
-                className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative group"
+          sections.map((sec) => {
+            const sectionPosts = filteredPosts.filter((p) => {
+              if (sec.id === "featured") {
+                return p.isFeatured;
+              }
+              return p.sectionId === sec.id || (sec.id === "uncategorized" && !p.sectionId && !p.isFeatured);
+            });
+
+            if (sectionPosts.length === 0 && (!isAdminUser || !isAdminMode)) {
+              return null;
+            }
+
+            return (
+              <section
+                key={sec.id}
+                className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm space-y-6"
               >
-                {/* Featured / Archived Badges */}
-                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-wrap gap-1.5">
-                  {post.isFeatured && (
-                    <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
-                      ⭐ Featured
-                    </span>
-                  )}
-                  {post.isArchived && (
-                    <span className="bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
-                      📦 Archived
-                    </span>
+                {/* Section Header */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                  <div className="flex-1 min-w-[200px]">
+                    {editingSectionId === sec.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editingTitleText}
+                          onChange={(e) => setEditingTitleText(e.target.value)}
+                          className="text-xl font-bold text-gray-900 border border-indigo-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                          onClick={() => handleSaveRenameSection(sec.id)}
+                          className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs font-semibold"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                          {sec.title}
+                        </h2>
+                        {isAdminUser && isAdminMode && !sec.isSystem && (
+                          <button
+                            onClick={() => handleStartRenameSection(sec)}
+                            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100"
+                          >
+                            𓂃🖊 Edit Title
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400 font-medium mt-0.5">
+                      {sectionPosts.length} post{sectionPosts.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+
+                  {isAdminUser && isAdminMode && !sec.isSystem && (
+                    <button
+                      onClick={() => handleDeleteSection(sec.id)}
+                      className="bg-rose-100 text-rose-700 hover:bg-rose-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                    >
+                      🗑 Remove Section
+                    </button>
                   )}
                 </div>
 
-                {/* Admin Cover Photo Hover Overlay */}
-                {isAdminUser && isAdminMode && (
-                  <label className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-xl cursor-pointer transition shadow-md flex items-center gap-1">
-                    <span>📷 Change Cover</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handlePostImageUpload(e, post._id)}
-                    />
-                  </label>
-                )}
+                {/* Section Cards Grid */}
+                {sectionPosts.length === 0 ? (
+                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-xs text-gray-400 font-medium">
+                    This section is empty. Use the post settings below to assign posts here.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    {sectionPosts.map((post, index) => (
+                      <div
+                        key={`${sec.id}-${post._id}`}
+                        draggable={isAdminUser && isAdminMode}
+                        onDragStart={(e) => handleDragStart(e, sec.id, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, sec.id, index)}
+                        className={`bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative group ${
+                          isAdminUser && isAdminMode
+                            ? "cursor-grab active:cursor-grabbing"
+                            : ""
+                        }`}
+                      >
+                        {/* Drag Handle Bar */}
+                        {isAdminUser && isAdminMode && (
+                          <div className="bg-slate-800 text-slate-200 text-[10px] font-semibold tracking-wider uppercase px-3 py-1 flex items-center justify-between select-none">
+                            <span>⋮⋮ Drag to reorder</span>
+                            <span className="text-indigo-300 font-mono">#{index + 1}</span>
+                          </div>
+                        )}
 
-                {/* Post Card Wrapper with added Padding & Overflow safety */}
-                <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
-                  <PostCard post={post} />
-                </div>
+                        {/* Badges */}
+                        <div className="absolute top-10 left-3 sm:top-10 sm:left-4 z-10 flex flex-wrap gap-1.5">
+                          {post.isFeatured && (
+                            <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
+                              ★ Featured
+                            </span>
+                          )}
+                          {post.isArchived && (
+                            <span className="bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
+                              ִ໋🀦 Archived
+                            </span>
+                          )}
+                        </div>
 
-                {/* Admin Control Bar for each post card */}
-                {isAdminUser && isAdminMode && (
-                  <div className="p-3 sm:p-4 bg-slate-100 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold mt-auto">
-                    <button
-                      onClick={() =>
-                        handleToggleFeatured(post._id, post.isFeatured)
-                      }
-                      className={`flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg transition text-center ${
-                        post.isFeatured
-                          ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                          : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
-                      }`}
-                    >
-                      {post.isFeatured ? "Unfeature ⭐" : "Feature ⭐"}
-                    </button>
+                        {/* Admin Cover Photo Hover Button */}
+                        {isAdminUser && isAdminMode && (
+                          <label className="absolute top-10 right-3 sm:top-10 sm:right-4 z-20 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-xl cursor-pointer transition shadow-md flex items-center gap-1">
+                            <span>📷 Cover</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handlePostImageUpload(e, post._id)}
+                            />
+                          </label>
+                        )}
 
-                    <button
-                      onClick={() =>
-                        handleToggleArchive(post._id, post.isArchived)
-                      }
-                      className={`flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg transition text-center ${
-                        post.isArchived
-                          ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                          : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
-                      }`}
-                    >
-                      {post.isArchived ? "Unarchive 📤" : "Archive 📦"}
-                    </button>
+                        {/* Post Card Component Wrapper */}
+                        <div className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
+                          <PostCard post={post} />
+                        </div>
 
-                    <button
-                      onClick={() => handleDeletePost(post._id)}
-                      className="w-full sm:w-auto px-2.5 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition text-center"
-                    >
-                      Delete 🗑️
-                    </button>
+                        {/* Admin Control Bar */}
+                        {isAdminUser && isAdminMode && (
+                          <div className="p-3 sm:p-4 bg-slate-100 border-t border-slate-200 flex flex-col gap-2.5 text-xs font-semibold mt-auto">
+                            {/* Section Assignment Dropdown */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] text-gray-500 font-bold uppercase">Section:</span>
+                              <select
+                                value={post.isFeatured ? "featured" : (post.sectionId || "uncategorized")}
+                                onChange={(e) => handleAssignSection(post._id, e.target.value)}
+                                className="bg-white border border-gray-300 text-gray-800 rounded-lg px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none flex-1"
+                              >
+                                {sections.map((s) => (
+                                  <option key={s.id} value={s.id}>
+                                    {s.title}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Actions Buttons */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/80">
+                              <button
+                                onClick={() => handleToggleFeatured(post._id, post.isFeatured)}
+                                className={`flex-1 px-2 py-1 rounded-lg transition text-center ${
+                                  post.isFeatured
+                                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                                    : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
+                                }`}
+                              >
+                                {post.isFeatured ? "Unfeature" : "Feature ★"}
+                              </button>
+
+                              <button
+                                onClick={() => handleToggleArchive(post._id, post.isArchived)}
+                                className={`flex-1 px-2 py-1 rounded-lg transition text-center ${
+                                  post.isArchived
+                                    ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                    : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
+                                }`}
+                              >
+                                {post.isArchived ? "Unarchive " : "Archive 𓍢ִ໋🀦"}
+                              </button>
+
+                              <button
+                                onClick={() => handleDeletePost(post._id)}
+                                className="px-2 py-1 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition text-center"
+                              >
+                                Delete 🗑
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
+              </section>
+            );
+          })
         )}
       </main>
     </div>

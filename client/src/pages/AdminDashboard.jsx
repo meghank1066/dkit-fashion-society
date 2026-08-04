@@ -4,6 +4,7 @@ import Editor from "../components/Editor";
 
 export default function AdminDashboard() {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -27,8 +28,16 @@ export default function AdminDashboard() {
   const fetchPosts = async () => {
     try {
       const res = await API.get("/posts");
-
       setPosts(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+ const fetchUsers = async () => {
+    try {
+      const res = await API.get("/users", config); // Changed from "/api/users" to "/users"
+      setUsers(res.data);
     } catch (err) {
       console.log(err);
     }
@@ -36,6 +45,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchPosts();
+    fetchUsers();
   }, []);
 
   const resetForm = () => {
@@ -68,7 +78,6 @@ export default function AdminDashboard() {
       }
 
       resetForm();
-
       fetchPosts();
     } catch (err) {
       console.log(err);
@@ -95,8 +104,22 @@ export default function AdminDashboard() {
     if (!window.confirm("Delete this post?")) return;
 
     await API.delete(`/posts/${id}`, config);
-
     fetchPosts();
+  };
+
+  
+
+  const toggleAdminRole = async (userId, currentRole) => {
+    const newRole = currentRole === "admin" ? "user" : "admin";
+    if (!window.confirm(`Change user role to ${newRole}?`)) return;
+
+    try {
+      await API.put(`/users/${userId}/role`, { role: newRole }, config); // Changed from "/api/users..." to "/users..."
+      fetchUsers();
+    } catch (err) {
+      console.log(err);
+      alert("Failed to update user role.");
+    }
   };
 
   // Remove HTML from Tiptap preview
@@ -113,22 +136,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#011145] p-5 md:p-10">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-10">
         {/* HEADER */}
-
         <div className="mb-10">
           <h1 className="font-serif text-5xl md:text-6xl text-white">
             Admin Dashboard
           </h1>
-
           <p className="text-blue-100 mt-3">
-            Manage posts, publish updates and maintain website content.
+            Manage posts, publish updates, maintain website content, and handle user permissions.
           </p>
         </div>
 
         <div className="grid xl:grid-cols-3 gap-10">
           {/* CREATE / EDIT */}
-
           <div
             className={
               fullscreen
@@ -141,7 +161,6 @@ export default function AdminDashboard() {
                 <h2 className="font-serif text-3xl text-[#011145]">
                   {editingPost ? "Edit Post" : "Create Post"}
                 </h2>
-
                 <p className="text-gray-500 text-sm mt-1">
                   Tiptap editor powered content
                 </p>
@@ -181,109 +200,78 @@ export default function AdminDashboard() {
                 className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
               />
 
-             {/* Cover Image */}
-<div className="space-y-3">
+              {/* Cover Image */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-[#011145]">
+                  Cover Image
+                </label>
 
-  <label className="text-sm font-medium text-[#011145]">
-    Cover Image
-  </label>
+                {/* URL INPUT */}
+                <input
+                  placeholder="Paste image URL"
+                  value={coverImage}
+                  onChange={(e) => setCoverImage(e.target.value)}
+                  className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011145]"
+                />
 
+                <div className="text-center text-gray-400 text-sm">OR</div>
 
-  {/* URL INPUT */}
-  <input
-    placeholder="Paste image URL"
-    value={coverImage}
-    onChange={(e) => setCoverImage(e.target.value)}
-    className="w-full border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
-  />
+                {/* FILE UPLOAD */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
 
+                    const formData = new FormData();
+                    formData.append("image", file);
 
-  <div className="text-center text-gray-400 text-sm">
-    OR
-  </div>
+                    try {
+                      const res = await API.post(
+                        "/upload",
+                        formData,
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "multipart/form-data",
+                          },
+                        }
+                      );
+                      setCoverImage(res.data.url);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }}
+                  className="w-full border border-gray-200 p-3 rounded-xl"
+                />
 
-
-  {/* FILE UPLOAD */}
-  <input
-    type="file"
-    accept="image/*"
-    onChange={async (e) => {
-
-      const file = e.target.files[0];
-
-      if (!file) return;
-
-
-      const formData = new FormData();
-
-      formData.append("image", file);
-
-
-      try {
-
-        const res = await API.post(
-          "/upload",
-          formData,
-          {
-            headers:{
-              Authorization:`Bearer ${token}`,
-              "Content-Type":"multipart/form-data"
-            }
-          }
-        );
-
-
-        setCoverImage(res.data.url);
-
-
-      } catch(error){
-
-        console.log(error);
-
-      }
-
-    }}
-    className="w-full border border-gray-200 p-3"
-  />
-
-
-  {/* PREVIEW */}
-  {coverImage && (
-    <img
-      src={coverImage}
-      alt="Cover preview"
-      className={`w-full h-[350px] object-cover object-${imagePosition}`}
-    />
-  )}
-
-</div>
+                {/* PREVIEW */}
+                {coverImage && (
+                  <img
+                    src={coverImage}
+                    alt="Cover preview"
+                    className={`w-full h-[350px] rounded-2xl object-cover object-${imagePosition}`}
+                  />
+                )}
+              </div>
 
               <select
                 value={imagePosition}
                 onChange={(e) => setImagePosition(e.target.value)}
-                className="border border-gray-200 rounded-xl p-3"
+                className="w-full border border-gray-200 rounded-xl p-3"
               >
                 <option value="center">Image Center</option>
-
                 <option value="top">Image Top</option>
-
                 <option value="bottom">Image Bottom</option>
               </select>
 
-              {coverImage && (
-                <img
-                  src={coverImage}
-                  alt="preview"
-                  className={`w-full h-[350px] rounded-2xl object-cover object-${imagePosition}`}
+              <div className="min-h-[600px]">
+                <Editor
+                  content={content}
+                  setContent={setContent}
                 />
-              )}
-
-<div className="min-h-[600px]">
-  <Editor
-    content={content}
-    setContent={setContent}
-  />
-</div>
+              </div>
 
               <select
                 value={category}
@@ -291,15 +279,10 @@ export default function AdminDashboard() {
                 className="w-full border border-gray-200 rounded-xl p-3"
               >
                 <option value="announcement">Announcement</option>
-
                 <option value="event">Event</option>
-
                 <option value="fashion">Fashion</option>
-
                 <option value="makeup">Beauty</option>
-
                 <option value="lifestyle">Lifestyle</option>
-
                 <option value="editorial">Editorial</option>
               </select>
 
@@ -310,7 +293,6 @@ export default function AdminDashboard() {
           </div>
 
           {/* MANAGE POSTS */}
-
           <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8">
             <div className="flex justify-between items-center mb-8">
               <h2 className="font-serif text-3xl text-[#011145]">
@@ -322,7 +304,7 @@ export default function AdminDashboard() {
               </span>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-[1150px] overflow-y-auto pr-2">
               {posts.map((post) => (
                 <div
                   key={post._id}
@@ -366,6 +348,78 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* --- USERS / ADMIN MANAGEMENT SECTION --- */}
+        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 mt-10">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+            <div>
+              <h2 className="font-serif text-3xl text-[#011145]">
+                Website Users & Permissions
+              </h2>
+              <p className="text-gray-500 text-sm mt-1">
+                View registered users and manage administrator privileges
+              </p>
+            </div>
+
+            <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-full font-semibold">
+              {users.length} Users Registered
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 text-[#011145] text-sm uppercase tracking-wider">
+                  <th className="py-3 px-4 font-semibold">Name / Email</th>
+                  <th className="py-3 px-4 font-semibold">Current Role</th>
+                  <th className="py-3 px-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {users.map((u) => (
+                  <tr key={u._id} className="hover:bg-gray-50/80 transition">
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-[#011145]">
+                        {u.name || u.username || "Unnamed User"}
+                      </div>
+                      <div className="text-sm text-gray-500">{u.email}</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                          u.role === "admin"
+                            ? "bg-purple-100 text-purple-800"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {u.role || "user"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <button
+                        onClick={() => toggleAdminRole(u._id, u.role)}
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+                          u.role === "admin"
+                            ? "border border-red-300 text-red-600 hover:bg-red-50"
+                            : "bg-[#011145] text-white hover:bg-[#020d32]"
+                        }`}
+                      >
+                        {u.role === "admin" ? "Demote to User" : "Make Admin"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {users.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="text-center py-8 text-gray-400">
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

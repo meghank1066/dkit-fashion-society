@@ -229,7 +229,7 @@ export default function About() {
             onClick={handleSaveToLocalStorage}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition shadow"
           >
-            {saveNotification ? "✓ Saved!" : "💾 Save Changes"}
+            {saveNotification ? "✓ Saved!" : "➢ Save Changes"}
           </button>
         </div>
       )}
