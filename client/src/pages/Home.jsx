@@ -4,58 +4,65 @@ import API from "../api/axios";
 
 export default function Home() {
 
-  const [posts, setPosts] = useState([]);
   const [events, setEvents] = useState([]);
-const [articles, setArticles] = useState([]);
+
+  const [fashionPosts, setFashionPosts] = useState([]);
+  const [makeupPosts, setMakeupPosts] = useState([]);
+  const [lifestylePosts, setLifestylePosts] = useState([]);
+
 
 
   useEffect(() => {
 
-  const fetchPosts = async () => {
+    const fetchPosts = async () => {
 
-    try {
+      try {
 
-      const res = await API.get("/posts");
+        const res = await API.get("/posts");
 
-      const allPosts = res.data;
-
-
-      // Events block
-      setEvents(
-        allPosts.filter(
-          post => post.category === "event"
-        )
-      );
+        const posts = res.data;
 
 
-      // Fashion / Makeup journal block
-      setArticles(
-        allPosts.filter(
-          post =>
-            post.category === "fashion" ||
-            post.category === "makeup"
-        )
-      );
+        setEvents(
+          posts.filter(
+            post => post.category === "event"
+          )
+        );
 
 
-      // Optional: newest posts overall
-      setPosts(
-        allPosts.slice(0,3)
-      );
+        setFashionPosts(
+          posts.filter(
+            post => post.category === "fashion"
+          )
+        );
 
 
-    } catch(error){
-
-      console.log(error);
-
-    }
-
-  };
+        setMakeupPosts(
+          posts.filter(
+            post => post.category === "makeup"
+          )
+        );
 
 
-  fetchPosts();
+        setLifestylePosts(
+          posts.filter(
+            post => post.category === "lifestyle"
+          )
+        );
 
-}, []);
+
+      } catch(error){
+
+        console.log(error);
+
+      }
+
+    };
+
+
+    fetchPosts();
+
+  }, []);
 
 
 
@@ -64,19 +71,21 @@ const [articles, setArticles] = useState([]);
     <div className="bg-white text-gray-900">
 
 
-      {/* Hero */}
+      {/* HERO */}
+
       <section className="bg-black text-white py-32 px-6 text-center">
 
         <div className="max-w-5xl mx-auto">
+
 
           <h1 className="text-6xl md:text-7xl font-bold mb-6">
             DKIT Fashion Society
           </h1>
 
 
-          <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-            A creative space for fashion, self-expression, photography,
-            and student collaboration.
+          <p className="text-xl md:text-2xl text-gray-300">
+            A creative community celebrating fashion,
+            self-expression, photography, and student collaboration.
           </p>
 
 
@@ -88,116 +97,240 @@ const [articles, setArticles] = useState([]);
 
 
 
-      {/* Latest Events / Journal Posts */}
-    <section className="max-w-6xl mx-auto px-6 py-20">
+      {/* EVENTS */}
 
-<h2 className="text-4xl font-bold mb-10">
-Upcoming Events
-</h2>
+      <section className="max-w-6xl mx-auto px-6 py-20">
 
 
-<div className="grid md:grid-cols-3 gap-8">
-
-{
-events.slice(0,3).map((post)=>(
-
-<Link
-key={post._id}
-to={`/posts/${post._id}`}
-className="rounded-3xl shadow-lg overflow-hidden"
->
-
-<img
-src={post.coverImage}
-alt={post.title}
-className="w-full h-64 object-cover"
-/>
+        <div className="flex justify-between items-center mb-10">
 
 
-<div className="p-6">
+          <div>
 
-<h3 className="text-xl font-bold">
-{post.title}
-</h3>
+            <h2 className="text-4xl font-bold">
+              Upcoming Events
+            </h2>
 
-<p className="text-gray-500">
-{post.subtitle}
-</p>
 
-</div>
+            <p className="text-gray-500 mt-2">
+              Discover the latest DKIT Fashion Society activities.
+            </p>
 
-</Link>
+          </div>
 
-))
 
-}
+          <Link
+            to="/posts"
+            className="underline font-semibold"
+          >
+            View All
+          </Link>
 
-</div>
 
-</section>
+        </div>
 
 
 
+        <div className="grid md:grid-cols-3 gap-8">
 
-      {/* Future Blog Section */}
+
+          {events.slice(0,3).map(post => (
+
+            <Link
+              key={post._id}
+              to={`/posts/${post._id}`}
+              className="rounded-3xl overflow-hidden shadow-lg hover:-translate-y-2 transition"
+            >
+
+
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-64 object-cover"
+              />
+
+
+              <div className="p-6">
+
+
+                <h3 className="text-xl font-bold">
+                  {post.title}
+                </h3>
+
+
+                <p className="text-gray-500 mt-2">
+                  {post.subtitle}
+                </p>
+
+
+              </div>
+
+
+            </Link>
+
+          ))}
+
+
+        </div>
+
+
+      </section>
+
+
+
+
+
+
+
+      {/* JOURNAL */}
+
       <section className="bg-gray-100 py-20">
 
 
         <div className="max-w-6xl mx-auto px-6">
 
 
-          <h2 className="text-4xl font-bold mb-5 text-center">
+          <h2 className="text-5xl font-bold mb-5">
             Fashion Journal
           </h2>
 
 
-          <p className="text-center text-gray-600 mb-12">
-            Explore future articles, fashion inspiration, student features,
-            and creative stories.
+          <p className="text-gray-600 mb-12">
+            Explore fashion, beauty, lifestyle and creative stories.
           </p>
 
 
 
-        <div className="grid md:grid-cols-3 gap-8">
 
-{
-articles.slice(0,3).map((post)=>(
-
-<Link
-key={post._id}
-to={`/posts/${post._id}`}
-className="bg-white rounded-3xl overflow-hidden shadow"
->
+          <div className="grid md:grid-cols-3 gap-6">
 
 
-<img
-src={post.coverImage}
-className="w-full h-56 object-cover"
-/>
+
+            {/* Fashion */}
+
+            {fashionPosts.slice(0,1).map(post => (
+
+              <Link
+                key={post._id}
+                to={`/posts/${post._id}`}
+                className="relative overflow-hidden rounded-3xl group"
+              >
+
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="w-full h-[420px] object-cover group-hover:scale-105 transition"
+                />
 
 
-<div className="p-6">
-
-<h3 className="font-bold text-xl">
-{post.title}
-</h3>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-6">
 
 
-<p className="text-gray-500 mt-2">
-{post.subtitle}
-</p>
+                  <h3 className="text-3xl font-bold">
+                    Fashion
+                  </h3>
 
 
-</div>
+                  <p className="mt-2">
+                    {post.title}
+                  </p>
 
 
-</Link>
+                </div>
 
-))
 
-}
+              </Link>
 
-</div>
+            ))}
+
+
+
+
+
+
+            {/* Makeup */}
+
+            {makeupPosts.slice(0,1).map(post => (
+
+              <Link
+                key={post._id}
+                to={`/posts/${post._id}`}
+                className="relative overflow-hidden rounded-3xl group"
+              >
+
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="w-full h-[420px] object-cover group-hover:scale-105 transition"
+                />
+
+
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-6">
+
+
+                  <h3 className="text-3xl font-bold">
+                    Beauty
+                  </h3>
+
+
+                  <p className="mt-2">
+                    {post.title}
+                  </p>
+
+
+                </div>
+
+
+              </Link>
+
+            ))}
+
+
+
+
+
+
+
+            {/* Lifestyle */}
+
+            {lifestylePosts.slice(0,1).map(post => (
+
+              <Link
+                key={post._id}
+                to={`/posts/${post._id}`}
+                className="relative overflow-hidden rounded-3xl group"
+              >
+
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="w-full h-[420px] object-cover group-hover:scale-105 transition"
+                />
+
+
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-6">
+
+
+                  <h3 className="text-3xl font-bold">
+                    Lifestyle
+                  </h3>
+
+
+                  <p className="mt-2">
+                    {post.title}
+                  </p>
+
+
+                </div>
+
+
+              </Link>
+
+            ))}
+
+
+
+          </div>
 
 
         </div>
@@ -209,8 +342,11 @@ className="w-full h-56 object-cover"
 
 
 
-      {/* Photoshoot Editorials */}
-      {/* <section className="max-w-6xl mx-auto px-6 py-20 text-center">
+
+
+      {/* EDITORIALS */}
+
+      <section className="max-w-6xl mx-auto px-6 py-20 text-center">
 
 
         <h2 className="text-4xl font-bold mb-5">
@@ -219,12 +355,14 @@ className="w-full h-56 object-cover"
 
 
         <p className="text-gray-600 max-w-2xl mx-auto mb-10">
-          Creative editorial shoots showcasing fashion, styling,
-          photography, and student creativity.
+          Showcasing creativity through styling, photography,
+          and fashion storytelling.
         </p>
 
 
+
         <div className="bg-black text-white rounded-3xl p-12">
+
 
           <h3 className="text-3xl font-bold mb-3">
             2026 - 2027 Coming Soon ✨
@@ -232,7 +370,7 @@ className="w-full h-56 object-cover"
 
 
           <p className="text-gray-300">
-            Editorial concepts, collaborations, and photoshoot projects
+            Editorial shoots, collaborations and creative projects
             will be announced soon.
           </p>
 
@@ -240,13 +378,16 @@ className="w-full h-56 object-cover"
         </div>
 
 
-      </section> */}
+      </section>
 
 
 
 
 
-      {/* What We Offer */}
+
+
+      {/* WHAT WE OFFER */}
+
       <section className="bg-gray-100 py-20">
 
 
@@ -264,33 +405,35 @@ className="w-full h-56 object-cover"
 
             <div className="bg-white rounded-3xl p-8">
 
-              <h3 className="font-bold text-xl mb-3">
+              <h3 className="text-xl font-bold mb-3">
                 Events
               </h3>
 
               <p>
-                Fashion-focused socials, creative events, and student activities.
+                Fashion socials, creative activities and student events.
               </p>
 
             </div>
 
 
+
             <div className="bg-white rounded-3xl p-8">
 
-              <h3 className="font-bold text-xl mb-3">
+              <h3 className="text-xl font-bold mb-3">
                 Creativity
               </h3>
 
               <p>
-                Opportunities for styling, photography, design, and collaboration.
+                Opportunities in styling, photography, design and media.
               </p>
 
             </div>
 
 
+
             <div className="bg-white rounded-3xl p-8">
 
-              <h3 className="font-bold text-xl mb-3">
+              <h3 className="text-xl font-bold mb-3">
                 Community
               </h3>
 
@@ -313,7 +456,10 @@ className="w-full h-56 object-cover"
 
 
 
-      {/* Registration */}
+
+
+      {/* MEMBERSHIP */}
+
       <section className="bg-black text-white py-20 text-center">
 
 
@@ -326,7 +472,7 @@ className="w-full h-56 object-cover"
 
 
           <p className="text-gray-300 text-lg mb-8">
-            Join DKIT Fashion Society and be part of our creative community.
+            Join DKIT Fashion Society and become part of our creative community.
           </p>
 
 
@@ -343,12 +489,19 @@ className="w-full h-56 object-cover"
 
 
 
-      {/* Footer */}
+
+
+
+
+      {/* FOOTER */}
+
       <footer className="bg-gray-950 text-gray-400 py-10 text-center">
+
 
         <h3 className="text-white text-xl font-bold mb-3">
           DKIT Fashion Society
         </h3>
+
 
         <p>
           Fashion • Creativity • Community
