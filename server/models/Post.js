@@ -18,7 +18,7 @@ const postSchema = new mongoose.Schema(
 
         coverImage: {
             type: String,
-            default: ""
+            default: "center"
         },
 
 

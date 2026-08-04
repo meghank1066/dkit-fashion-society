@@ -6,9 +6,14 @@ export default function AdminDashboard(){
 
     const [posts, setPosts] = useState([]);
 
+
+
     const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [category, setCategory] = useState("announcement");
+const [subtitle, setSubtitle] = useState("");
+const [content, setContent] = useState("");
+const [coverImage, setCoverImage] = useState("");
+const [category, setCategory] = useState("announcement");
+const [imagePosition, setImagePosition] = useState("center");
     const [editingPost, setEditingPost] = useState(null);
 
 
@@ -54,19 +59,23 @@ const createPost = async (e)=>{
 
     try {
 
-        await API.post(
-            "/posts",
-            {
-                title,
-                content,
-                category
-            },
-            config
-        );
+       await API.post(
+    "/posts",
+    {
+        title,
+        subtitle,
+        coverImage,
+        content,
+        category
+    },
+    config
+);
 
-
-        setTitle("");
-        setContent("");
+setTitle("");
+setSubtitle("");
+setCoverImage("");
+setContent("");
+setCategory("announcement");
 
         fetchPosts();
 
@@ -99,21 +108,26 @@ const createPost = async (e)=>{
     e.preventDefault();
 
 
-    await API.put(
-        `/posts/${editingPost._id}`,
-        {
-            title,
-            content,
-            category
-        },
-        config
-    );
+   await API.put(
+    `/posts/${editingPost._id}`,
+    {
+        title,
+        subtitle,
+        coverImage,
+        content,
+        category
+    },
+    config
+);
 
 
     setEditingPost(null);
 
     setTitle("");
-    setContent("");
+setSubtitle("");
+setCoverImage("");
+setContent("");
+setCategory("announcement");
 
     fetchPosts();
 
@@ -155,6 +169,49 @@ value={title}
 onChange={(e)=>setTitle(e.target.value)}
 className="w-full border p-3 mb-4"
 />
+
+<input
+placeholder="Subtitle"
+value={subtitle}
+onChange={(e)=>setSubtitle(e.target.value)}
+className="w-full border p-3 mb-4"
+/>
+
+<input
+placeholder="Cover Image URL"
+value={coverImage}
+onChange={(e)=>setCoverImage(e.target.value)}
+className="w-full border p-3 mb-4"
+/>
+
+<select
+value={imagePosition}
+onChange={(e)=>setImagePosition(e.target.value)}
+className="w-full border p-3 mb-4"
+>
+
+<option value="center">
+Center
+</option>
+
+<option value="top">
+Top
+</option>
+
+<option value="bottom">
+Bottom
+</option>
+
+</select>
+
+{coverImage && (
+    <img
+    src={coverImage}
+    alt="Cover preview"
+    className="w-full h-[500px] object-top object-cover mb-5"
+/>
+)}
+
 
 
 <Editor
@@ -259,6 +316,10 @@ onClick={()=>{
 setEditingPost(post);
 
 setTitle(post.title);
+
+setSubtitle(post.subtitle);
+
+setCoverImage(post.coverImage);
 
 setContent(post.content);
 

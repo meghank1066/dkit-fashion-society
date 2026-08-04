@@ -6,13 +6,12 @@ export default function PostCard({ post }) {
 
             <div className="h-64 bg-gray-200 mb-6 overflow-hidden">
 
-                {post.image ? (
-                    <img
-                        src={post.image}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                ) : (
+                {post.coverImage ? (
+    <img
+          src={post.coverImage}
+    alt={post.title}
+    className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"/>
+) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
                         Fashion Society
                     </div>
@@ -31,9 +30,12 @@ export default function PostCard({ post }) {
             </h3>
 
 
-            <p className="mt-4 text-gray-600">
-                {post.content}
-            </p>
+           <p 
+className="mt-4 text-gray-600"
+dangerouslySetInnerHTML={{
+    __html: post.content.substring(0,150) + "..."
+}}
+/>
 
 
             <p className="mt-5 text-sm">
