@@ -49,6 +49,9 @@ export default function About() {
   const [newSectionTitle, setNewSectionTitle] = useState("Academic Year 2026 – 2027");
   const [saveNotification, setSaveNotification] = useState(false);
 
+  // Drag and drop tracking state
+  const [draggedCard, setDraggedCard] = useState(null); // { sectionId, index }
+
   // Check admin access
   useEffect(() => {
     try {
@@ -179,6 +182,40 @@ export default function About() {
     );
   };
 
+  // --- Drag and Drop Handlers ---
+  const handleDragStart = (e, sectionId, index) => {
+    setDraggedCard({ sectionId, index });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e, targetSectionId, targetIndex) => {
+    e.preventDefault();
+    if (!draggedCard) return;
+
+    const { sectionId: sourceSectionId, index: sourceIndex } = draggedCard;
+
+    // Only allow reordering within the same section
+    if (sourceSectionId === targetSectionId && sourceIndex !== targetIndex) {
+      setCommittees((prev) =>
+        prev.map((sec) => {
+          if (sec.id === targetSectionId) {
+            const updatedMembers = [...sec.members];
+            const [movedMember] = updatedMembers.splice(sourceIndex, 1);
+            updatedMembers.splice(targetIndex, 0, movedMember);
+            return { ...sec, members: updatedMembers };
+          }
+          return sec;
+        })
+      );
+    }
+    setDraggedCard(null);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased">
       {/* --- Admin Toggle Header Bar --- */}
@@ -211,7 +248,7 @@ export default function About() {
             </div>
 
             <p className="text-xs text-indigo-700">
-              Create a new empty section or copy an existing year's panel below. All changes automatically persist.
+              Create new sections, edit details, upload images, or drag card handles to reorder members.
             </p>
 
             <div className="flex flex-wrap gap-3 items-center pt-2">
@@ -314,26 +351,35 @@ export default function About() {
               {section.members.map((member, index) => (
                 <div
                   key={index}
-                  className="group bg-slate-50/50 rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative"
+                  draggable={isAdmin}
+                  onDragStart={(e) => handleDragStart(e, section.id, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, section.id, index)}
+                  className={`group bg-slate-50/50 rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative ${
+                    isAdmin ? "cursor-grab active:cursor-grabbing" : ""
+                  }`}
                 >
-                  {/* Delete Member Button (Admin) */}
+                  {/* Drag Handle Overlay (Admin) */}
                   {isAdmin && (
-                    <button
-                      onClick={() => handleDeleteMember(section.id, index)}
-                      className="absolute top-2 right-2 z-10 bg-rose-600 text-white p-1.5 rounded-full hover:bg-rose-700 transition shadow"
-                      title="Delete Member"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                    <div className="bg-slate-800 text-slate-200 text-[10px] font-semibold tracking-wider uppercase px-2 py-1 flex items-center justify-between select-none">
+                      <span>⋮⋮ Drag to reorder</span>
+                      <button
+                        onClick={() => handleDeleteMember(section.id, index)}
+                        className="bg-rose-600 hover:bg-rose-700 text-white rounded p-0.5 transition"
+                        title="Delete Member"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
 
                   <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out pointer-events-none"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "https://via.placeholder.com/400x400?text=Member";
