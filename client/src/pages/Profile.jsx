@@ -134,7 +134,7 @@ export default function UserProfile() {
                     formData.append("image", file);
 
                     try {
-                    const res = await API.post("/api/upload", formData, {
+                    const res = await API.post("/upload", formData, {
                         headers: {
                           Authorization: `Bearer ${token}`,
                           "Content-Type": "multipart/form-data",
