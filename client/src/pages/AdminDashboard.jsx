@@ -478,6 +478,7 @@ export default function AdminDashboard() {
                     </td>
                   </tr>
                 )}
+                {/* save */}
               </tbody>
             </table>
           </div>
