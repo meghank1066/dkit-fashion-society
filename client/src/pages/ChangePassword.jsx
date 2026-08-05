@@ -75,7 +75,7 @@ export default function ChangePassword() {
         </div>
 
         {/* Password Section */}
-        <form 
+        {/* <form 
           onSubmit={submit}
           className="p-10"
         >
@@ -106,7 +106,7 @@ export default function ChangePassword() {
           />
 
           <button
-         c  type="submit"
+           type="submit"
             className="bg-[#011145] text-white px-8 py-3 hover:opacity-90 transition cursor-pointer"
           >
             Update Password
@@ -117,7 +117,7 @@ export default function ChangePassword() {
               {message}
             </p>
           )}
-        </form>
+        </form> */}
 
       </div>
     </div>

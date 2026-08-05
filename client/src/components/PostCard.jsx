@@ -68,10 +68,19 @@ export default function PostCard({ post }) {
 
 
 
-                <p className="mt-5 text-sm">
-                    By {post.author?.username || "DKIT Fashion Society"}
-                </p>
-
+                <div className="flex items-center gap-2 mt-4">
+  {/* Author Profile Picture */}
+  <img
+    src={post.author?.profilePic || "https://via.placeholder.com/40"}
+    alt={post.author?.username || "Author"}
+    className="w-8 h-8 rounded-full object-cover border border-gray-200"
+  />
+  
+  {/* Author Name */}
+  <span className="text-sm font-medium text-gray-700">
+    By {post.author?.username || "Anonymous"}
+  </span>
+</div>
 
             </article>
 

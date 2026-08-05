@@ -222,12 +222,12 @@ export default function About() {
       {isAdmin && (
         <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex items-center justify-between shadow-lg text-sm font-medium">
           <div className="flex items-center">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+            <span className="inline-block w-2.5 h-2.5 bg-emerald-400 animate-pulse mr-2"></span>
             DKIT Fashion Society - Admin Dashboard
           </div>
           <button
             onClick={handleSaveToLocalStorage}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition shadow"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-semibold transition shadow"
           >
             {saveNotification ? "✓ Saved!" : "➢ Save Changes"}
           </button>
@@ -237,12 +237,12 @@ export default function About() {
       {/* --- Main Admin Control Panel --- */}
       {isAdmin && (
         <div className="max-w-7xl mx-auto my-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-indigo-50/90 border border-indigo-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4">
+          <div className="bg-indigo-50/90 border border-indigo-200/80 p-6 sm:p-8 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-indigo-950 flex items-center gap-2">
                 ⚙️ Admin Dashboard Controls
               </h3>
-              <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">
+              <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1">
                 Active
               </span>
             </div>
@@ -257,11 +257,11 @@ export default function About() {
                 placeholder="New Year Title (e.g. Academic Year 2026 – 2027)"
                 value={newSectionTitle}
                 onChange={(e) => setNewSectionTitle(e.target.value)}
-                className="flex-1 min-w-[280px] px-4 py-2.5 bg-white border border-indigo-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                className="flex-1 min-w-[280px] px-4 py-2.5 bg-white border border-indigo-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
               />
               <button
                 onClick={handleCreateNewSection}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 text-sm font-semibold transition shadow-sm"
               >
                 + Create Blank Section
               </button>
@@ -293,7 +293,7 @@ export default function About() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 space-y-16 sm:space-y-24">
         {/* Our Story Section */}
         <section>
-          <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14 border border-gray-100 shadow-xl shadow-gray-200/50 transition duration-300">
+          <div className="bg-white p-6 sm:p-10 md:p-14 border border-gray-100 shadow-xl shadow-gray-200/50 transition duration-300">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6 sm:mb-8 tracking-tight">
               Our Story
             </h2>
@@ -312,7 +312,7 @@ export default function About() {
 
         {/* Dynamic Committee Sections */}
         {committees.map((section) => (
-          <section key={section.id} className="relative space-y-8 bg-white p-6 sm:p-10 rounded-3xl border border-gray-100 shadow-sm">
+          <section key={section.id} className="relative space-y-8 bg-white p-6 sm:p-10 border border-gray-100 shadow-sm">
             <div className="text-center space-y-3">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
                 Society Committee
@@ -326,19 +326,19 @@ export default function About() {
                 <div className="flex flex-wrap justify-center gap-3 pt-3 pb-2">
                   <button
                     onClick={() => handleCopySection(section)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
                   >
                     📋 Copy Section to New Year
                   </button>
                   <button
                     onClick={() => handleAddMember(section.id)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
                   >
                     + Add Member Card
                   </button>
                   <button
                     onClick={() => handleDeleteSection(section.id)}
-                    className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition shadow-sm"
+                    className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
                   >
                     🗑️ Delete This Panel
                   </button>
@@ -355,7 +355,7 @@ export default function About() {
                   onDragStart={(e) => handleDragStart(e, section.id, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, section.id, index)}
-                  className={`group bg-slate-50/50 rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative ${
+                  className={`group bg-slate-50/50 border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col relative ${
                     isAdmin ? "cursor-grab active:cursor-grabbing" : ""
                   }`}
                 >
@@ -365,7 +365,7 @@ export default function About() {
                       <span>⋮⋮ Drag to reorder</span>
                       <button
                         onClick={() => handleDeleteMember(section.id, index)}
-                        className="bg-rose-600 hover:bg-rose-700 text-white rounded p-0.5 transition"
+                        className="bg-rose-600 hover:bg-rose-700 text-white p-0.5 transition"
                         title="Delete Member"
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -409,7 +409,7 @@ export default function About() {
                           onChange={(e) =>
                             handleUpdateMember(section.id, index, "name", e.target.value)
                           }
-                          className="w-full text-center border border-gray-300 rounded-lg px-2 py-1 text-sm font-bold focus:ring-1 focus:ring-indigo-500"
+                          className="w-full text-center border border-gray-300 px-2 py-1 text-sm font-bold focus:ring-1 focus:ring-indigo-500"
                         />
                         <input
                           type="text"
@@ -417,7 +417,7 @@ export default function About() {
                           onChange={(e) =>
                             handleUpdateMember(section.id, index, "role", e.target.value)
                           }
-                          className="w-full text-center border border-gray-300 rounded-lg px-2 py-1 text-xs text-gray-600 focus:ring-1 focus:ring-indigo-500"
+                          className="w-full text-center border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:ring-1 focus:ring-indigo-500"
                         />
                       </div>
                     ) : (
@@ -443,7 +443,7 @@ export default function About() {
             href="https://forms.gle/VSDTgJMXZf1Cy4uw8"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block border-2 border-[#011145] text-[#011145] px-8 py-3 rounded-2xl text-sm font-medium hover:bg-[#011145] hover:text-white transition duration-300 text-center cursor-pointer shadow-sm"
+            className="inline-block border-2 border-[#011145] text-[#011145] px-8 py-3 text-sm font-medium hover:bg-[#011145] hover:text-white transition duration-300 text-center cursor-pointer shadow-sm"
           >
             Join Our Committee
           </a>

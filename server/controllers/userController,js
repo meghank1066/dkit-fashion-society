@@ -1,0 +1,41 @@
+const User = require('../models/User'); // Adjust path to your User model
+
+// Update user profile (Username and Profile Picture)
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assumes your authentication middleware attaches user info to req.user
+    const { username, profilePic } = req.body;
+
+    // Check if username is already taken by someone else
+    if (username) {
+      const existingUser = await User.findOne({ username, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ message: "Username is already taken by another user." });
+      }
+    }
+
+    // Find and update the user, returning the updated document without the password
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { 
+        ...(username && { username }), 
+        ...(profilePic !== undefined && { profilePic }) 
+      },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ 
+      message: "Profile updated successfully", 
+      user: updatedUser 
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Server error while updating profile." });
+  }
+};
+
+module.exports = { updateProfile };

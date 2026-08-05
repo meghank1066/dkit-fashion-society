@@ -144,7 +144,6 @@ export default function Posts() {
   };
 
   const handleAssignSection = async (postId, newSectionId) => {
-    const isNowFeatured = newSectionId === "featured" ? true : undefined;
     try {
       setPosts((prev) =>
         prev.map((p) =>
@@ -269,19 +268,19 @@ export default function Posts() {
       {isAdminUser && (
         <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-lg text-sm font-medium">
           <div className="flex items-center gap-2">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="inline-block w-2.5 h-2.5 bg-emerald-400 animate-pulse"></span>
             <span>DKIT Fashion Society - Admin Dashboard</span>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={handleSaveSections}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold transition shadow-sm"
             >
               {saveNotification ? "✓ Layout Saved!" : "➢ Save Layout"}
             </button>
             <button
               onClick={() => setIsAdminMode(!isAdminMode)}
-              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-xl text-white font-semibold transition shadow-sm text-xs"
+              className="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 text-white font-semibold transition shadow-sm text-xs"
             >
               {isAdminMode ? "Exit Admin Mode" : "Admin Panel Mode"}
             </button>
@@ -292,12 +291,12 @@ export default function Posts() {
       {/* --- Admin Control Dashboard Panel --- */}
       {isAdminUser && isAdminMode && (
         <div className="max-w-7xl mx-auto my-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-indigo-50/90 border border-indigo-200/80 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm space-y-6">
+          <div className="bg-indigo-50/90 border border-indigo-200/80 p-4 sm:p-6 lg:p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-base sm:text-lg font-bold text-indigo-950 flex items-center gap-2">
                 ⚙️ Posts & Section Management Dashboard
               </h3>
-              <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full">
+              <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1">
                 Active
               </span>
             </div>
@@ -313,11 +312,11 @@ export default function Posts() {
                   placeholder='e.g., "Lifestyle", "Fashion Week 2026", "Highlights"'
                   value={newSectionTitle}
                   onChange={(e) => setNewSectionTitle(e.target.value)}
-                  className="flex-1 min-w-[240px] px-3.5 py-2 bg-white border border-indigo-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                  className="flex-1 min-w-[240px] px-3.5 py-2 bg-white border border-indigo-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
                 />
                 <button
                   onClick={handleCreateSection}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-xs font-semibold transition shadow-sm"
                 >
                   + Add Section
                 </button>
@@ -338,7 +337,7 @@ export default function Posts() {
                 <button
                   key={tab.value}
                   onClick={() => setFilter(tab.value)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  className={`px-3 py-1.5 text-xs font-semibold transition ${
                     filter === tab.value
                       ? "bg-indigo-600 text-white shadow-sm"
                       : "bg-white text-indigo-900 hover:bg-indigo-100 border border-indigo-200"
@@ -371,7 +370,7 @@ export default function Posts() {
 
           {isAdminUser && isAdminMode && (
             <div className="pt-4">
-              <label className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition">
+              <label className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-4 py-2 text-xs font-semibold cursor-pointer transition">
                 <span> 📷 Edit Hero Cover Photo</span>
                 <input
                   type="file"
@@ -392,7 +391,7 @@ export default function Posts() {
             Loading society posts...
           </div>
         ) : filteredPosts.length === 0 ? (
-          <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm max-w-lg mx-auto">
+          <div className="text-center py-16 px-4 bg-white border border-gray-100 shadow-sm max-w-lg mx-auto">
             <p className="text-lg font-semibold text-gray-600">No posts found.</p>
             <p className="text-sm text-gray-400 mt-1">
               {filter !== "all"
@@ -416,7 +415,7 @@ export default function Posts() {
             return (
               <section
                 key={sec.id}
-                className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm space-y-6"
+                className="bg-white border border-gray-100 p-6 sm:p-8 shadow-sm space-y-6"
               >
                 {/* Section Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
@@ -427,11 +426,11 @@ export default function Posts() {
                           type="text"
                           value={editingTitleText}
                           onChange={(e) => setEditingTitleText(e.target.value)}
-                          className="text-xl font-bold text-gray-900 border border-indigo-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="text-xl font-bold text-gray-900 border border-indigo-300 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <button
                           onClick={() => handleSaveRenameSection(sec.id)}
-                          className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs font-semibold"
+                          className="bg-emerald-600 text-white px-3 py-1 text-xs font-semibold"
                         >
                           Save
                         </button>
@@ -444,7 +443,7 @@ export default function Posts() {
                         {isAdminUser && isAdminMode && !sec.isSystem && (
                           <button
                             onClick={() => handleStartRenameSection(sec)}
-                            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100"
+                            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold bg-indigo-50 px-2 py-1 border border-indigo-100"
                           >
                             𓂃🖊 Edit Title
                           </button>
@@ -459,7 +458,7 @@ export default function Posts() {
                   {isAdminUser && isAdminMode && !sec.isSystem && (
                     <button
                       onClick={() => handleDeleteSection(sec.id)}
-                      className="bg-rose-100 text-rose-700 hover:bg-rose-200 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                      className="bg-rose-100 text-rose-700 hover:bg-rose-200 px-3 py-1.5 text-xs font-semibold transition"
                     >
                       🗑 Remove Section
                     </button>
@@ -468,7 +467,7 @@ export default function Posts() {
 
                 {/* Section Cards Grid */}
                 {sectionPosts.length === 0 ? (
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center text-xs text-gray-400 font-medium">
+                  <div className="border-2 border-dashed border-gray-200 p-8 text-center text-xs text-gray-400 font-medium">
                     This section is empty. Use the post settings below to assign posts here.
                   </div>
                 ) : (
@@ -480,7 +479,7 @@ export default function Posts() {
                         onDragStart={(e) => handleDragStart(e, sec.id, index)}
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, sec.id, index)}
-                        className={`bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative group ${
+                        className={`bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative group ${
                           isAdminUser && isAdminMode
                             ? "cursor-grab active:cursor-grabbing"
                             : ""
@@ -497,12 +496,12 @@ export default function Posts() {
                         {/* Badges */}
                         <div className="absolute top-10 left-3 sm:top-10 sm:left-4 z-10 flex flex-wrap gap-1.5">
                           {post.isFeatured && (
-                            <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
+                            <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-md">
                               ★ Featured
                             </span>
                           )}
                           {post.isArchived && (
-                            <span className="bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md">
+                            <span className="bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-md">
                               ִ໋🀦 Archived
                             </span>
                           )}
@@ -510,7 +509,7 @@ export default function Posts() {
 
                         {/* Admin Cover Photo Hover Button */}
                         {isAdminUser && isAdminMode && (
-                          <label className="absolute top-10 right-3 sm:top-10 sm:right-4 z-20 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-2.5 py-1.5 rounded-xl cursor-pointer transition shadow-md flex items-center gap-1">
+                          <label className="absolute top-10 right-3 sm:top-10 sm:right-4 z-20 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-2.5 py-1.5 cursor-pointer transition shadow-md flex items-center gap-1">
                             <span>📷 Cover</span>
                             <input
                               type="file"
@@ -535,7 +534,7 @@ export default function Posts() {
                               <select
                                 value={post.isFeatured ? "featured" : (post.sectionId || "uncategorized")}
                                 onChange={(e) => handleAssignSection(post._id, e.target.value)}
-                                className="bg-white border border-gray-300 text-gray-800 rounded-lg px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none flex-1"
+                                className="bg-white border border-gray-300 text-gray-800 px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none flex-1"
                               >
                                 {sections.map((s) => (
                                   <option key={s.id} value={s.id}>
@@ -549,7 +548,7 @@ export default function Posts() {
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/80">
                               <button
                                 onClick={() => handleToggleFeatured(post._id, post.isFeatured)}
-                                className={`flex-1 px-2 py-1 rounded-lg transition text-center ${
+                                className={`flex-1 px-2 py-1 transition text-center ${
                                   post.isFeatured
                                     ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
                                     : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
@@ -560,7 +559,7 @@ export default function Posts() {
 
                               <button
                                 onClick={() => handleToggleArchive(post._id, post.isArchived)}
-                                className={`flex-1 px-2 py-1 rounded-lg transition text-center ${
+                                className={`flex-1 px-2 py-1 transition text-center ${
                                   post.isArchived
                                     ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
                                     : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
@@ -571,7 +570,7 @@ export default function Posts() {
 
                               <button
                                 onClick={() => handleDeletePost(post._id)}
-                                className="px-2 py-1 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition text-center"
+                                className="px-2 py-1 bg-rose-600 text-white hover:bg-rose-700 transition text-center"
                               >
                                 Delete 🗑
                               </button>

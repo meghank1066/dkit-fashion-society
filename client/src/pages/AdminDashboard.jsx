@@ -180,7 +180,7 @@ export default function AdminDashboard() {
             className={
               fullscreen
                 ? "fixed inset-0 z-50 bg-white p-8 md:p-16 overflow-y-auto"
-                : "xl:col-span-2 bg-white rounded-3xl shadow-2xl p-6 md:p-8"
+                : "xl:col-span-2 bg-white rounded-none shadow-2xl p-6 md:p-8"
             }
           >
             <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition"
+                  className="border border-gray-300 px-4 py-2 rounded-none hover:bg-gray-100 transition cursor-pointer"
                 >
                   New
                 </button>
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setFullscreen(!fullscreen)}
-                  className="border border-[#011145] text-[#011145] px-5 py-2 rounded-xl hover:bg-[#011145] hover:text-white transition"
+                  className="border border-[#011145] text-[#011145] px-5 py-2 rounded-none hover:bg-[#011145] hover:text-white transition cursor-pointer"
                 >
                   {fullscreen ? "Exit Fullscreen" : "Fullscreen"}
                 </button>
@@ -217,14 +217,14 @@ export default function AdminDashboard() {
                 placeholder="Post title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+                className="w-full border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
               />
 
               <input
                 placeholder="Short description"
                 value={subtitle}
                 onChange={(e) => setSubtitle(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+                className="w-full border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
               />
 
               {/* Cover Image */}
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
                   placeholder="Paste image URL"
                   value={coverImage}
                   onChange={(e) => setCoverImage(e.target.value)}
-                  className="w-full border border-gray-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#011145]"
+                  className="w-full border border-gray-200 p-3 rounded-none focus:outline-none focus:ring-2 focus:ring-[#011145]"
                 />
 
                 <div className="text-center text-gray-400 text-sm">OR</div>
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
                       console.log(error);
                     }
                   }}
-                  className="w-full border border-gray-200 p-3 rounded-xl"
+                  className="w-full border border-gray-200 p-3 rounded-none file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-semibold file:bg-[#011145] file:text-white hover:file:bg-[#020d32] cursor-pointer"
                 />
 
                 {/* PREVIEW */}
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
                   <img
                     src={coverImage}
                     alt="Cover preview"
-                    className={`w-full h-[350px] rounded-2xl object-cover object-${imagePosition}`}
+                    className={`w-full h-[350px] rounded-none object-cover object-${imagePosition}`}
                   />
                 )}
               </div>
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
               <select
                 value={imagePosition}
                 onChange={(e) => setImagePosition(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-3"
+                className="w-full border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
               >
                 <option value="center">Image Center</option>
                 <option value="top">Image Top</option>
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl p-3"
+                className="w-full border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
               >
                 <option value="announcement">Announcement</option>
                 <option value="event">Event</option>
@@ -313,20 +313,20 @@ export default function AdminDashboard() {
                 <option value="editorial">Editorial</option>
               </select>
 
-              <button className="bg-[#011145] text-white px-8 py-3 rounded-xl hover:bg-[#020d32] transition">
+              <button className="bg-[#011145] text-white px-8 py-3 rounded-none hover:bg-[#020d32] transition cursor-pointer font-semibold">
                 {editingPost ? "Update Post" : "Publish Post"}
               </button>
             </form>
           </div>
 
           {/* MANAGE POSTS */}
-          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8">
+          <div className="bg-white rounded-none shadow-2xl p-6 md:p-8">
             <div className="flex justify-between items-center mb-8">
               <h2 className="font-serif text-3xl text-[#011145]">
                 Manage Posts
               </h2>
 
-              <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-full">
+              <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-none">
                 {posts.length} Posts
               </span>
             </div>
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
               {posts.map((post) => (
                 <div
                   key={post._id}
-                  className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition"
+                  className="border border-gray-200 rounded-none overflow-hidden hover:shadow-lg transition"
                 >
                   <img
                     src={post.coverImage}
@@ -348,7 +348,7 @@ export default function AdminDashboard() {
                       {post.title}
                     </h3>
 
-                    <span className="inline-block mt-3 bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-3 py-1 rounded-full">
+                    <span className="inline-block mt-3 bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-3 py-1 rounded-none">
                       {post.category}
                     </span>
 
@@ -359,14 +359,14 @@ export default function AdminDashboard() {
                     <div className="flex gap-3 mt-6">
                       <button
                         onClick={() => editPost(post)}
-                        className="border border-[#011145] text-[#011145] px-5 py-2 rounded-xl hover:bg-[#011145] hover:text-white transition"
+                        className="border border-[#011145] text-[#011145] px-5 py-2 rounded-none hover:bg-[#011145] hover:text-white transition cursor-pointer"
                       >
                         Edit
                       </button>
 
                       <button
                         onClick={() => deletePost(post._id)}
-                        className="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition"
+                        className="bg-red-600 text-white px-5 py-2 rounded-none hover:bg-red-700 transition cursor-pointer"
                       >
                         Delete
                       </button>
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* --- USERS / ADMIN MANAGEMENT SECTION --- */}
-        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 mt-10">
+        <div className="bg-white rounded-none shadow-2xl p-6 md:p-10 mt-10">
           <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
             <div>
               <h2 className="font-serif text-3xl text-[#011145]">
@@ -390,7 +390,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-full font-semibold">
+            <span className="bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-4 py-2 rounded-none font-semibold">
               {users.length} Total Users in System
             </span>
           </div>
@@ -402,13 +402,13 @@ export default function AdminDashboard() {
               placeholder="Search exact email to make user an admin..."
               value={userSearchEmail}
               onChange={(e) => setUserSearchEmail(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+              className="flex-1 border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
             />
 
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+              className="border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
             >
               <option value="all">All Roles</option>
               <option value="admin">Admins Only</option>
@@ -441,7 +441,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="py-4 px-4">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        className={`inline-block px-3 py-1 rounded-none text-xs font-bold uppercase tracking-wider ${
                           u.role === "admin"
                             ? "bg-purple-100 text-purple-800"
                             : "bg-gray-100 text-gray-700"
@@ -453,7 +453,7 @@ export default function AdminDashboard() {
                     <td className="py-4 px-4 text-right space-x-2">
                       <button
                         onClick={() => toggleAdminRole(u._id, u.role)}
-                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+                        className={`px-4 py-2 rounded-none text-xs font-semibold transition cursor-pointer ${
                           u.role === "admin"
                             ? "border border-red-300 text-red-600 hover:bg-red-50"
                             : "bg-[#011145] text-white hover:bg-[#020d32]"
@@ -464,7 +464,7 @@ export default function AdminDashboard() {
 
                       <button
                         onClick={() => deleteUser(u._id)}
-                        className="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-700 transition"
+                        className="bg-red-600 text-white px-4 py-2 rounded-none text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
                       >
                         Delete User
                       </button>

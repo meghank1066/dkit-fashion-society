@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: true },
         role: { type: String, default: "user" },
         profileImage: { type: String, default: "" },
+        profilePic: { type: String, default: "" },
     },
     { timestamps: true }
 );

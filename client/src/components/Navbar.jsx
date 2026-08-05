@@ -73,15 +73,14 @@ export default function Navbar() {
                     {/* Desktop Right Actions */}
                     <div className="hidden md:flex items-center gap-6 text-[#011145] font-medium">
 
-                        {user && (
-                            <Link
-                                to="/change-password"
-                                className={getLinkStyle("/change-password")}
-                            >
-                                SETTINGS
-                            </Link>
-                        )}
-
+                    {user && (
+    <Link
+        to="/profile"
+        className={getLinkStyle("/profile")}
+    >
+        SETTINGS
+    </Link>
+)}
 
                         {user?.role === "admin" && (
                             <Link
