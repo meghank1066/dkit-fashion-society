@@ -257,6 +257,13 @@ export default function Home() {
                 const formData = new FormData(form);
                 formData.append("access_key", "1a8add07-a5eb-4583-abe7-809cdee29f53s");
 
+
+                console.log("Access key:", formData.get("access_key"));
+
+for (const pair of formData.entries()) {
+  console.log(pair[0], pair[1]);
+}
+
                 try {
                   const response = await fetch("https://api.web3forms.com/submit", {
                     method: "POST",
