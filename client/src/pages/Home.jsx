@@ -255,7 +255,7 @@ export default function Home() {
                 submitBtn.innerText = "Sending...";
 
                 const formData = new FormData(form);
-                formData.append("access_key", "YOUR_WEB3FORMS_ACCESS_KEY");
+                formData.append("access_key", "1a8add07-a5eb-4583-abe7-809cdee29f53s");
 
                 try {
                   const response = await fetch("https://api.web3forms.com/submit", {
