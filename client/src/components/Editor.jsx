@@ -61,8 +61,8 @@ export default function Editor({ content, setContent }) {
     formData.append("image", file);
 
     try {
-     const res = await API.post(
-  "/upload",
+    const res = await API.post(
+  "/api/upload",
   formData,
   {
     headers:{
