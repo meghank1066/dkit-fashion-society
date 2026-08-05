@@ -437,17 +437,17 @@ export default function About() {
           </section>
         ))}
 
-        {/* Join Committee Link */}
-        <div className="mt-8 flex justify-center">
-          <a
-            href="https://forms.gle/VSDTgJMXZf1Cy4uw8"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block border-2 border-[#011145] text-[#011145] px-8 py-3 text-sm font-medium hover:bg-[#011145] hover:text-white transition duration-300 text-center cursor-pointer shadow-sm"
-          >
-            Join Our Committee
-          </a>
-        </div>
+        {/* View Constitution*/}
+       <div className="mt-8 flex justify-center">
+  <a
+    href="/images/webdesign/pdfs/DUC_DKIT%20Fashion%20Society%20Constitution.pdf"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-block border-2 border-[#011145] text-[#011145] px-8 py-3 text-sm font-medium hover:bg-[#011145] hover:text-white transition duration-300 text-center cursor-pointer shadow-sm"
+  >
+    View Constitution
+  </a>
+</div>
       </main>
     </div>
   );
