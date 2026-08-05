@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await API.get("/posts");
+        const res = await API.get("/api/posts");
         const posts = res.data;
 
         setEvents(posts.filter(post => post.category === "event"));

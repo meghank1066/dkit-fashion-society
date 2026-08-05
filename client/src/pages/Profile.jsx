@@ -22,7 +22,7 @@ export default function UserProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await API.get("/auth/me", config);
+        const response = await API.get("/api/auth/me", config);
         const user = response.data.user;
         setUserData(user);
         setUsername(user.username || "");
@@ -42,11 +42,11 @@ export default function UserProfile() {
     setMessage("");
 
     try {
-      const response = await API.put(
-        "/users/update-profile",
-        { username, profilePic },
-        config
-      );
+    const response = await API.put(
+  "/api/users/update-profile",
+  { username, profilePic },
+  config
+);
       setUserData(response.data.user);
       setUsername(response.data.user.username);
       setIsEditingUsername(false);
@@ -134,7 +134,7 @@ export default function UserProfile() {
                     formData.append("image", file);
 
                     try {
-                      const res = await API.post("/upload", formData, {
+                    const res = await API.post("/api/upload", formData, {
                         headers: {
                           Authorization: `Bearer ${token}`,
                           "Content-Type": "multipart/form-data",

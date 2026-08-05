@@ -23,7 +23,7 @@ export default function ResetPassword() {
     setMessage("");
 
     try {
-      const res = await API.post(`/auth/reset-password/${token}`, { password });
+      const res = await API.post(`/api/auth/reset-password/${token}`, { password });
       setMessage(res.data.message);
       
       // Redirect to login after 3 seconds

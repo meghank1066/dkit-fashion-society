@@ -57,7 +57,7 @@ export default function Posts() {
 
   const fetchPosts = () => {
     setLoading(true);
-    API.get("/posts")
+    API.get("/api/posts")
       .then((res) => {
         const mapped = res.data.map((p) => ({
           ...p,
@@ -134,7 +134,7 @@ export default function Posts() {
             : p
         )
       );
-      await API.patch(`/posts/${postId}`, {
+      await API.patch(`/api/posts/${postId}`, {
         isFeatured: nextFeatured,
       });
     } catch (err) {
@@ -156,7 +156,7 @@ export default function Posts() {
             : p
         )
       );
-      await API.patch(`/posts/${postId}`, {
+     await API.patch(`/api/posts/${postId}`, {
         sectionId: newSectionId,
         ...(newSectionId === "featured" ? { isFeatured: true } : {}),
       });
@@ -173,7 +173,7 @@ export default function Posts() {
           p._id === postId ? { ...p, isArchived: !currentArchived } : p
         )
       );
-      await API.patch(`/posts/${postId}`, { isArchived: !currentArchived });
+   await API.patch(`/api/posts/${postId}`, { isArchived: !currentArchived });
     } catch (err) {
       console.error("Failed to archive post:", err);
       fetchPosts();
@@ -185,7 +185,7 @@ export default function Posts() {
       return;
     try {
       setPosts((prev) => prev.filter((p) => p._id !== postId));
-      await API.delete(`/posts/${postId}`);
+      await API.delete(`/api/posts/${postId}`);
     } catch (err) {
       console.error("Failed to delete post:", err);
       fetchPosts();
@@ -207,7 +207,7 @@ export default function Posts() {
     formData.append("coverPhoto", file);
 
     try {
-      await API.post(`/posts/${postId}/cover`, formData, {
+      await API.post(`/api/posts/${postId}/cover`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     } catch (err) {

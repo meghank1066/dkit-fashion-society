@@ -13,7 +13,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     try {
-      const res = await API.post("/auth/forgot-password", { email });
+      const res = await API.post("/api/auth/forgot-password", { email });
       setMessage(res.data.message);
     } catch (error) {
       setMessage(

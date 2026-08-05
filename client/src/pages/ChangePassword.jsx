@@ -13,7 +13,7 @@ export default function ChangePassword() {
     e.preventDefault();
 
     try {
-      await API.put("/auth/change-password", {
+      await API.put("/api/auth/change-password", {
         currentPassword,
         newPassword
       });

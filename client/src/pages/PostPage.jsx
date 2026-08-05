@@ -7,7 +7,7 @@ export default function PostPage() {
     const [post, setPost] = useState(null);
 
     useEffect(() => {
-        API.get(`/posts/${id}`)
+        API.get(`/api/posts/${id}`)
             .then(res => {
                 setPost(res.data);
             })

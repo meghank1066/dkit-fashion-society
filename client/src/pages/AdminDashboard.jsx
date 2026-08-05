@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
   const fetchPosts = async () => {
     try {
-      const res = await API.get("/posts");
+     const res = await API.get("/api/posts");
       setPosts(res.data);
     } catch (err) {
       console.log(err);
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get("/users", config);
+      const res = await API.get("/api/users", config);
       setUsers(res.data);
     } catch (err) {
       console.log(err);
@@ -76,9 +76,9 @@ export default function AdminDashboard() {
 
     try {
       if (editingPost) {
-        await API.put(`/posts/${editingPost._id}`, data, config);
-      } else {
-        await API.post("/posts", data, config);
+     await API.put(`/api/posts/${editingPost._id}`, data, config);
+// and
+await API.post("/api/posts", data, config);
       }
 
       resetForm();
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
   const deletePost = async (id) => {
     if (!window.confirm("Delete this post?")) return;
 
-    await API.delete(`/posts/${id}`, config);
+   await API.delete(`/api/posts/${id}`, config);
     fetchPosts();
   };
 
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     if (!window.confirm(`Change user role to ${newRole}?`)) return;
 
     try {
-      await API.put(`/users/${userId}/role`, { role: newRole }, config);
+      await API.put(`/api/users/${userId}/role`, { role: newRole }, config);
       fetchUsers();
     } catch (err) {
       console.log(err);
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Are you sure you want to completely delete this user?")) return;
 
     try {
-      await API.delete(`/users/${userId}`, config);
+      await API.delete(`/api/users/${userId}`, config);
       fetchUsers();
     } catch (err) {
       console.log(err);
