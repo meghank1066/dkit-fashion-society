@@ -29,10 +29,18 @@ const CustomImage = Image.extend({
 export default function Editor({ content, setContent }) {
   const fileInput = useRef(null);
 
-  const editor = useEditor({
+const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      // 1. REPLACE THE STANDARD 'StarterKit' WITH THIS CONFIGURED VERSION:
+      StarterKit.configure({
+        heading: {
+          HTMLAttributes: {
+            // This forces Tailwind classes directly onto your headings!
+            class: 'text-3xl md:text-4xl font-serif font-bold text-[#011145] mt-10 mb-4',
+          },
+        },
+      }),
 
       CustomImage.configure({
         inline: false,

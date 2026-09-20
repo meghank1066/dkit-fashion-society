@@ -121,3 +121,14 @@ h1, h2, h3, h4 {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
+/* Add this to your global CSS file */
+.prose h2, article h2 {
+  font-family: serif;
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 2.25rem;
+  font-weight: 600;
+  color: #011145; /* your primary brand color */
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
