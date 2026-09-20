@@ -33,11 +33,11 @@ const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       // 1. REPLACE THE STANDARD 'StarterKit' WITH THIS CONFIGURED VERSION:
-      StarterKit.configure({
+StarterKit.configure({
         heading: {
           HTMLAttributes: {
-            // This forces Tailwind classes directly onto your headings!
-            class: 'text-3xl md:text-4xl font-serif font-bold text-[#011145] mt-10 mb-4',
+            // Changed text-3xl to text-5xl (or text-4xl) to make it properly prominent
+            class: 'text-5xl font-serif font-bold text-[#011145] mt-10 mb-4',
           },
         },
       }),
