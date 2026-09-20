@@ -70,14 +70,14 @@ export default function PostPage() {
 </div>
 
             {/* ARTICLE CONTENT */}
-            <div className="max-w-3xl mx-auto px-10 pb-20">
-                <div
-                    className="prose prose-lg max-w-none [&_p]:mb-6 [&_p:empty]:h-6 [&_h2]:mt-10 [&_h2]:mb-4 [&_ul]:mb-6 [&_ol]:mb-6"
-                    dangerouslySetInnerHTML={{
-                        __html: post.content
-                    }}
-                />
-            </div>
+<div className="max-w-3xl mx-auto px-10 pb-20">
+    <div
+        className="prose prose-lg max-w-none [&_p]:mb-6 [&_p:empty]:h-6 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-black [&_ul]:mb-6 [&_ol]:mb-6"
+        dangerouslySetInnerHTML={{
+            __html: post.content
+        }}
+    />
+</div>
         </article>
     );
 }
