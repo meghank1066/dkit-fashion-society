@@ -8,30 +8,26 @@ import {
     getPosts,
     getPost,
     updatePost,
-    reorderPosts,
     deletePost
 } from "../controllers/postController.js";
 
 const router = express.Router();
 
+
 // PUBLIC
+
 router.get("/", getPosts);
+
 router.get("/:id", getPost);
 
+
 // ADMIN
+
 router.post(
     "/",
     protect,
     adminOnly,
     createPost
-);
-
-// Add route for bulk reordering (must be placed before /:id routes)
-router.put(
-    "/reorder",
-    protect,
-    adminOnly,
-    reorderPosts
 );
 
 router.put(
@@ -54,5 +50,6 @@ router.delete(
     adminOnly,
     deletePost
 );
+
 
 export default router;

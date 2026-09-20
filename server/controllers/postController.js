@@ -11,7 +11,6 @@ export const createPost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
-            order,
         } = req.body;
 
         const post = await Post.create({
@@ -23,7 +22,6 @@ export const createPost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
-            order: order || 0,
             author: req.user.id,
         });
 
@@ -44,8 +42,8 @@ export const createPost = async (req, res) => {
 export const getPosts = async (req, res) => {
     try {
         const posts = await Post.find()
-            .populate("author", "username profilePic")
-            .sort({ order: 1, createdAt: -1 }); // Sort by sequence order first, then newest
+            .populate("author", "username profilePic") // ✅ Fixed from "user" to "author"
+            .sort({ createdAt: -1 });
 
         res.json(posts);
 
@@ -58,8 +56,12 @@ export const getPosts = async (req, res) => {
 
 export const getPost = async (req, res) => {
     try {
+        console.log("Searching for post ID:", req.params.id);
+
         const post = await Post.findById(req.params.id)
             .populate("author", "username profilePic");
+
+        console.log("Found post:", post);
 
         if (!post) {
             return res.status(404).json({
@@ -70,6 +72,7 @@ export const getPost = async (req, res) => {
         res.json(post);
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: error.message
         });
@@ -87,7 +90,6 @@ export const updatePost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
-            order,
         } = req.body;
 
         const updates = {};
@@ -100,7 +102,6 @@ export const updatePost = async (req, res) => {
         if (isFeatured !== undefined) updates.isFeatured = isFeatured;
         if (sectionId !== undefined) updates.sectionId = sectionId;
         if (isArchived !== undefined) updates.isArchived = isArchived;
-        if (order !== undefined) updates.order = order;
 
         const post = await Post.findByIdAndUpdate(
             req.params.id,
@@ -128,29 +129,6 @@ export const updatePost = async (req, res) => {
         res.status(500).json({
             message: error.message,
         });
-    }
-};
-
-// New Controller to handle bulk reordering
-export const reorderPosts = async (req, res) => {
-    try {
-        const { orderedPostIds } = req.body; // Expects an array of post IDs in the new order
-
-        if (!Array.isArray(orderedPostIds)) {
-            return res.status(400).json({ message: "orderedPostIds must be an array" });
-        }
-
-        // Loop and update indices in database
-        const updatePromises = orderedPostIds.map((postId, index) =>
-            Post.findByIdAndUpdate(postId, { order: index })
-        );
-
-        await Promise.all(updatePromises);
-
-        res.json({ message: "Posts reordered successfully" });
-    } catch (error) {
-        console.error("Reorder error:", error);
-        res.status(500).json({ message: error.message });
     }
 };
 
