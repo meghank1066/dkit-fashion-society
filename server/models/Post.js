@@ -1,54 +1,58 @@
 import mongoose from "mongoose";
 
-
 const postSchema = new mongoose.Schema(
     {
-
         title: {
             type: String,
-            required: true
+            required: true,
         },
-
 
         subtitle: {
             type: String,
-            default: ""
+            default: "",
         },
-
 
         coverImage: {
             type: String,
-            default: "center"
+            default: "center",
         },
-
 
         content: {
             type: String,
-            required: true
+            required: true,
         },
-
 
         author: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: true,
         },
-
 
         category: {
             type: String,
-            default: "announcement"
-        }
+            default: "announcement",
+        },
 
+       isFeatured: {
+    type: Boolean,
+    default: false,
+},
+
+sectionId: {
+    type: String,
+    default: "",
+},
+
+isArchived: {
+    type: Boolean,
+    default: false,
+},
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 
-
-
 const Post = mongoose.model("Post", postSchema);
-
 
 export default Post;

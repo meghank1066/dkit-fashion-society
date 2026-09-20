@@ -244,34 +244,38 @@ await API.post("/api/posts", data, config);
                 <div className="text-center text-gray-400 text-sm">OR</div>
 
                 {/* FILE UPLOAD */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+       <input
+    type="file"
+    accept="image/*"
+    onChange={async (e) => {
+        const file = e.target.files[0];
 
-                    const formData = new FormData();
-                    formData.append("image", file);
+        if (!file) return;
 
-                    try {
-                      const res = await API.post(
-                        "/upload",
-                        formData,
-                        {
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "multipart/form-data",
-                          },
-                        }
-                      );
-                      setCoverImage(res.data.url);
-                    } catch (error) {
-                      console.log(error);
-                    }
-                  }}
-                  className="w-full border border-gray-200 p-3 rounded-none file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-semibold file:bg-[#011145] file:text-white hover:file:bg-[#020d32] cursor-pointer"
-                />
+        const formData = new FormData();
+
+        formData.append("image", file);
+
+        try {
+            const res = await API.post(
+                "/api/upload",
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setCoverImage(res.data.url);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }}
+    className="w-full border border-gray-200 p-3 rounded-none file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-semibold file:bg-[#011145] file:text-white hover:file:bg-[#020d32] cursor-pointer"
+/>
 
                 {/* PREVIEW */}
                 {coverImage && (

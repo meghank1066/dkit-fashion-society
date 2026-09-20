@@ -192,29 +192,54 @@ export default function Posts() {
     }
   };
 
-  const handlePostImageUpload = async (e, postId) => {
+const handlePostImageUpload = async (e, postId) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const tempUrl = URL.createObjectURL(file);
+
+    // Show temporary image immediately
     setPosts((prev) =>
-      prev.map((p) =>
-        p._id === postId ? { ...p, image: tempUrl, coverPhoto: tempUrl } : p
-      )
+        prev.map((p) =>
+            p._id === postId
+                ? { ...p, coverImage: tempUrl }
+                : p
+        )
     );
 
     const formData = new FormData();
-    formData.append("coverPhoto", file);
+
+    // IMPORTANT: backend expects "image"
+    formData.append("image", file);
 
     try {
-      await API.post(`/api/posts/${postId}/cover`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-    } catch (err) {
-      console.error("Failed to upload image:", err);
-    }
-  };
+        // Upload image
+        const res = await API.post("/api/upload", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
 
+        const imageUrl = res.data.url;
+
+        // Save image URL to the post
+        await API.put(`/api/posts/${postId}`, {
+            coverImage: imageUrl,
+        });
+
+        // Replace temporary URL with permanent uploaded URL
+        setPosts((prev) =>
+            prev.map((p) =>
+                p._id === postId
+                    ? { ...p, coverImage: imageUrl }
+                    : p
+            )
+        );
+
+    } catch (err) {
+        console.error("Failed to upload image:", err);
+    }
+};
   const handleHeroImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {

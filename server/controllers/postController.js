@@ -7,7 +7,10 @@ export const createPost = async (req, res) => {
             subtitle,
             coverImage,
             content,
-            category
+            category,
+            isFeatured,
+            sectionId,
+            isArchived,
         } = req.body;
 
         const post = await Post.create({
@@ -16,17 +19,22 @@ export const createPost = async (req, res) => {
             coverImage,
             content,
             category,
-            author: req.user.id
+            isFeatured,
+            sectionId,
+            isArchived,
+            author: req.user.id,
         });
 
         res.status(201).json({
             message: "Post created",
-            post
+            post,
         });
 
     } catch (error) {
+        console.error("Create post error:", error);
+
         res.status(500).json({
-            message: error.message
+            message: error.message,
         });
     }
 };
@@ -78,37 +86,48 @@ export const updatePost = async (req, res) => {
             subtitle,
             coverImage,
             content,
-            category
+            category,
+            isFeatured,
+            sectionId,
+            isArchived,
         } = req.body;
+
+        const updates = {};
+
+        if (title !== undefined) updates.title = title;
+        if (subtitle !== undefined) updates.subtitle = subtitle;
+        if (coverImage !== undefined) updates.coverImage = coverImage;
+        if (content !== undefined) updates.content = content;
+        if (category !== undefined) updates.category = category;
+        if (isFeatured !== undefined) updates.isFeatured = isFeatured;
+        if (sectionId !== undefined) updates.sectionId = sectionId;
+        if (isArchived !== undefined) updates.isArchived = isArchived;
 
         const post = await Post.findByIdAndUpdate(
             req.params.id,
+            updates,
             {
-                title,
-                subtitle,
-                coverImage,
-                content,
-                category
-            },
-            {
-                new: true
+                new: true,
+                runValidators: true,
             }
         );
 
         if (!post) {
             return res.status(404).json({
-                message: "Post not found"
+                message: "Post not found",
             });
         }
 
         res.json({
             message: "Post updated",
-            post
+            post,
         });
 
     } catch (error) {
+        console.error("Update post error:", error);
+
         res.status(500).json({
-            message: error.message
+            message: error.message,
         });
     }
 };

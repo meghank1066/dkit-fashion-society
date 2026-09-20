@@ -1,4 +1,5 @@
 import express from "express";
+
 import protect from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
 
@@ -10,24 +11,24 @@ import {
     deletePost
 } from "../controllers/postController.js";
 
-
 const router = express.Router();
 
 
 // PUBLIC
+
 router.get("/", getPosts);
 
 router.get("/:id", getPost);
 
 
 // ADMIN
+
 router.post(
     "/",
     protect,
     adminOnly,
     createPost
 );
-
 
 router.put(
     "/:id",
@@ -36,6 +37,12 @@ router.put(
     updatePost
 );
 
+router.patch(
+    "/:id",
+    protect,
+    adminOnly,
+    updatePost
+);
 
 router.delete(
     "/:id",
