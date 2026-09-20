@@ -37,7 +37,7 @@ StarterKit.configure({
         heading: {
           HTMLAttributes: {
             // Changed text-3xl to text-5xl (or text-4xl) to make it properly prominent
-            class: 'text-5xl font-serif font-bold text-[#011145] mt-10 mb-4',
+            class: 'text-5xl font-serif font-bold text-[#1a1a1a] mt-10 mb-4',
           },
         },
       }),
