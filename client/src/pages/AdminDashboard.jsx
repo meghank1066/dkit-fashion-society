@@ -62,31 +62,34 @@ export default function AdminDashboard() {
     setEditingPost(null);
   };
 
-  const submitPost = async (e) => {
-    e.preventDefault();
+const submitPost = async (e) => {
+  e.preventDefault();
 
-    const data = {
-      title,
-      subtitle,
-      content,
-      coverImage,
-      category,
-      imagePosition,
-    };
-
-    try {
-      if (editingPost) {
-     await API.put(`/api/posts/${editingPost._id}`, data, config);
-// and
-await API.post("/api/posts", data, config);
-      }
-
-      resetForm();
-      fetchPosts();
-    } catch (err) {
-      console.log(err);
-    }
+  const data = {
+    title,
+    subtitle,
+    content,
+    coverImage,
+    category,
+    imagePosition,
   };
+
+  try {
+    if (editingPost) {
+      // Update existing post
+      await API.put(`/api/posts/${editingPost._id}`, data, config);
+    } else {
+      // Create new post
+      await API.post("/api/posts", data, config);
+    }
+
+    resetForm();
+    fetchPosts();
+  } catch (err) {
+    console.log(err);
+    alert("Failed to save post. Check console for details.");
+  }
+};
 
   const editPost = (post) => {
     setEditingPost(post);
