@@ -59,12 +59,10 @@ export default function PostCard({ post }) {
 
 
 
-                <p
-                    className="mt-4 text-gray-600"
-                    dangerouslySetInnerHTML={{
-                        __html: post.content.substring(0,150) + "..."
-                    }}
-                />
+             {/* Instead of passing raw dangerouslySetInnerHTML directly to a text element */}
+<p className="mt-4 text-gray-600 line-clamp-2">
+    {stripHtml(post.content).substring(0, 120)}...
+</p>
 
 
 
@@ -90,3 +88,11 @@ export default function PostCard({ post }) {
     );
 
 }
+
+// Add this helper function inside or above your PostCard component
+const stripHtml = (html) => {
+    if (!html) return "";
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+};

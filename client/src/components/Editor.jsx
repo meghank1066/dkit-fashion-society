@@ -33,14 +33,12 @@ const editor = useEditor({
     immediatelyRender: false,
     extensions: [
       // 1. REPLACE THE STANDARD 'StarterKit' WITH THIS CONFIGURED VERSION:
+// In Editor.jsx, simplify your StarterKit configuration back to:
 StarterKit.configure({
-        heading: {
-          HTMLAttributes: {
-            // Changed text-3xl to text-5xl (or text-4xl) to make it properly prominent
-            class: 'text-5xl font-serif font-bold text-[#1a1a1a] mt-10 mb-4',
-          },
-        },
-      }),
+  heading: {
+    levels: [1, 2, 3],
+  },
+}),
 
       CustomImage.configure({
         inline: false,
