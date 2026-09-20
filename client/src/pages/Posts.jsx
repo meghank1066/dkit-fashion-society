@@ -20,10 +20,7 @@ export default function Posts() {
   const [filter, setFilter] = useState("all"); // 'all' | 'active' | 'archived' | 'featured'
 
   // Dynamic Sections Management State
-  const [sections, setSections] = useState([
-    { id: "featured", title: "Featured Posts", isSystem: true },
-    { id: "uncategorized", title: "All Posts", isSystem: true },
-  ]);=> {
+  const [sections, setSections] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("post_sections");
       if (saved) {
