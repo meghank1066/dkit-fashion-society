@@ -19,7 +19,7 @@ export default function Posts() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [filter, setFilter] = useState("all"); // 'all' | 'active' | 'archived' | 'featured'
 
-  // Dynamic Sections Management State
+  // Dynamic Sections Management State (with safe localStorage parsing)
   const [sections, setSections] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("post_sections");
@@ -156,7 +156,7 @@ export default function Posts() {
             : p
         )
       );
-     await API.patch(`/api/posts/${postId}`, {
+      await API.patch(`/api/posts/${postId}`, {
         sectionId: newSectionId,
         ...(newSectionId === "featured" ? { isFeatured: true } : {}),
       });
@@ -173,7 +173,7 @@ export default function Posts() {
           p._id === postId ? { ...p, isArchived: !currentArchived } : p
         )
       );
-   await API.patch(`/api/posts/${postId}`, { isArchived: !currentArchived });
+      await API.patch(`/api/posts/${postId}`, { isArchived: !currentArchived });
     } catch (err) {
       console.error("Failed to archive post:", err);
       fetchPosts();
@@ -192,7 +192,7 @@ export default function Posts() {
     }
   };
 
-const handlePostImageUpload = async (e, postId) => {
+  const handlePostImageUpload = async (e, postId) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -200,46 +200,42 @@ const handlePostImageUpload = async (e, postId) => {
 
     // Show temporary image immediately
     setPosts((prev) =>
-        prev.map((p) =>
-            p._id === postId
-                ? { ...p, coverImage: tempUrl }
-                : p
-        )
+      prev.map((p) =>
+        p._id === postId
+          ? { ...p, coverImage: tempUrl }
+          : p
+      )
     );
 
     const formData = new FormData();
-
-    // IMPORTANT: backend expects "image"
     formData.append("image", file);
 
     try {
-        // Upload image
-        const res = await API.post("/api/upload", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
+      const res = await API.post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-        const imageUrl = res.data.url;
+      const imageUrl = res.data.url;
 
-        // Save image URL to the post
-        await API.put(`/api/posts/${postId}`, {
-            coverImage: imageUrl,
-        });
+      await API.put(`/api/posts/${postId}`, {
+        coverImage: imageUrl,
+      });
 
-        // Replace temporary URL with permanent uploaded URL
-        setPosts((prev) =>
-            prev.map((p) =>
-                p._id === postId
-                    ? { ...p, coverImage: imageUrl }
-                    : p
-            )
-        );
-
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, coverImage: imageUrl }
+            : p
+        )
+      );
     } catch (err) {
-        console.error("Failed to upload image:", err);
+      console.error("Failed to upload image:", err);
+      fetchPosts();
     }
-};
+  };
+
   const handleHeroImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -348,15 +344,15 @@ const handlePostImageUpload = async (e, postId) => {
               </div>
             </div>
 
-            {/* Filter View Selector with Preserved Custom Emojis */}
+            {/* Filter View Selector */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
               <span className="text-xs font-semibold text-indigo-900 w-full sm:w-auto">
                 Filter View:
               </span>
               {[
                 { label: "All Posts", value: "all" },
-                { label: "Active  📽", value: "active" },
-                { label: "Featured  ★", value: "featured" },
+                { label: "Active 📽", value: "active" },
+                { label: "Featured ★", value: "featured" },
                 { label: "Archived 𓍢ִ໋🀦", value: "archived" },
               ].map((tab) => (
                 <button
@@ -527,7 +523,7 @@ const handlePostImageUpload = async (e, postId) => {
                           )}
                           {post.isArchived && (
                             <span className="bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-md">
-                              ִ໋🀦 Archived
+                              𓍢ִ໋🀦 Archived
                             </span>
                           )}
                         </div>
@@ -590,7 +586,7 @@ const handlePostImageUpload = async (e, postId) => {
                                     : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
                                 }`}
                               >
-                                {post.isArchived ? "Unarchive " : "Archive 𓍢ִ໋🀦"}
+                                {post.isArchived ? "Unarchive" : "Archive 𓍢ִ໋🀦"}
                               </button>
 
                               <button

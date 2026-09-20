@@ -33,20 +33,25 @@ const postSchema = new mongoose.Schema(
             default: "announcement",
         },
 
-       isFeatured: {
-    type: Boolean,
-    default: false,
-},
+        isFeatured: {
+            type: Boolean,
+            default: false,
+        },
 
-sectionId: {
-    type: String,
-    default: "",
-},
+        sectionId: {
+            type: String,
+            default: "",
+        },
 
-isArchived: {
-    type: Boolean,
-    default: false,
-},
+        isArchived: {
+            type: Boolean,
+            default: false,
+        },
+
+        order: {
+            type: Number,
+            default: 0,
+        },
     },
     {
         timestamps: true,
