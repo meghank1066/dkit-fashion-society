@@ -31,7 +31,13 @@ export default function Home() {
 
         // "Blog" = Editorial posts (set Category to Editorial on the blog page).
         // Featured ones are left out here since they already show under Upcoming Events.
-        setBlogPosts(posts.filter(post => post.category === "editorial" && !post.isFeatured));
+        // Only the 3 most recently added - "View All" goes to the full blog page.
+        setBlogPosts(
+          posts
+            .filter(post => post.category === "editorial" && !post.isFeatured)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 3)
+        );
 
         // Sections created on the blog page each get their own block on the homepage
         setCustomSections(
