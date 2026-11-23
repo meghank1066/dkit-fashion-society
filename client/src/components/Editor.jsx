@@ -90,6 +90,79 @@ export default function Editor({ content, setContent }) {
   const fileInput = useRef(null);
   const [cropSrc, setCropSrc] = useState(null); // image being cropped
   const [addingPoll, setAddingPoll] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(0);
+  const editorRef = useRef(null);
+
+  // ---- Pasting / dropping images (e.g. from Pinterest) ----
+  // Every image is copied into our Cloudinary so it never breaks later.
+  const insertImageAt = (url, pos) => {
+    const ed = editorRef.current;
+    if (!ed) return;
+    const content = [
+      { type: "image", attrs: { src: url, class: "image-center" } },
+      { type: "paragraph" },
+    ];
+    if (typeof pos === "number") ed.chain().focus().insertContentAt(pos, content).run();
+    else ed.chain().focus().insertContent(content).run();
+  };
+
+  const uploadImageFile = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file, file.name || "pasted-image.png");
+    const res = await API.post("/api/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.url;
+  };
+
+  const uploadImageFromUrl = async (url) => {
+    const res = await API.post("/api/upload/from-url", { url });
+    return res.data.url;
+  };
+
+  const handleIncomingImages = async ({ files = [], urls = [] }, pos) => {
+    const jobs = [
+      ...files.map((f) => () => uploadImageFile(f)),
+      ...urls.map((u) => () => uploadImageFromUrl(u)),
+    ];
+    if (jobs.length === 0) return;
+    setUploadingImages((n) => n + jobs.length);
+    for (const job of jobs) {
+      try {
+        insertImageAt(await job(), pos);
+      } catch (err) {
+        alert("Couldn't add that image: " + (err.response?.data?.message || err.message));
+      } finally {
+        setUploadingImages((n) => n - 1);
+      }
+    }
+  };
+
+  // Work out what images (if any) are on the clipboard / being dropped
+  const looksLikeImageUrl = (text) =>
+    /^https?:\/\/\S+$/i.test(text) &&
+    (/\.(jpe?g|png|webp|gif|avif)(\?\S*)?$/i.test(text) || /i\.pinimg\.com\//i.test(text));
+
+  const extractImages = (dataTransfer) => {
+    if (!dataTransfer) return null;
+    const files = Array.from(dataTransfer.files || []).filter((f) => f.type.startsWith("image/"));
+    if (files.length) return { files, urls: [] };
+
+    const html = dataTransfer.getData("text/html");
+    if (html) {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const urls = Array.from(doc.querySelectorAll("img"))
+        .map((img) => img.getAttribute("src"))
+        .filter((src) => src && /^https?:/i.test(src));
+      const hasText = (doc.body.textContent || "").trim().length > 0;
+      // only treat it as an image paste if it's just image(s), not a chunk of an article
+      if (urls.length && !hasText) return { files: [], urls };
+    }
+
+    const text = (dataTransfer.getData("text/plain") || "").trim();
+    if (looksLikeImageUrl(text)) return { files: [], urls: [text] };
+    return null;
+  };
 
 const editor = useEditor({
     immediatelyRender: false,
@@ -119,12 +192,33 @@ StarterKit.configure({
     // re-render the toolbar as the cursor moves, so buttons show what's active
     shouldRerenderOnTransaction: true,
 
+    editorProps: {
+      handlePaste: (view, event) => {
+        const found = extractImages(event.clipboardData);
+        if (!found) return false; // normal text paste
+        event.preventDefault();
+        handleIncomingImages(found);
+        return true;
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (moved) return false; // moving something already in the post
+        const found = extractImages(event.dataTransfer);
+        if (!found) return false;
+        event.preventDefault();
+        const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+        handleIncomingImages(found, coords?.pos);
+        return true;
+      },
+    },
+
     content,
 
     onUpdate: ({ editor }) => {
       setContent(editor.getHTML());
     },
   });
+
+  editorRef.current = editor;
 
   // When the parent loads a different post (e.g. clicking Edit, or resetting the form),
   // put that post's text into the editor. Without this the editor only reads
@@ -268,8 +362,14 @@ console.log("Uploaded image:", res.data.url);
           ↷
         </ToolbarButton>
 
-        {imageSelected && (
+        {uploadingImages > 0 ? (
+          <span className="ml-auto text-xs font-semibold text-[#011145]">
+            Adding {uploadingImages} image{uploadingImages > 1 ? "s" : ""}…
+          </span>
+        ) : imageSelected ? (
           <span className="ml-auto text-xs text-gray-500">Image selected: alignment moves the image</span>
+        ) : (
+          <span className="ml-auto text-xs text-gray-400 hidden lg:inline">Tip: paste or drag images straight in</span>
         )}
       </div>
 
