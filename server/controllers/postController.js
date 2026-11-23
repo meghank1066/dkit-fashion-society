@@ -166,16 +166,16 @@ export const reorderPosts = async (req, res) => {
             return res.status(400).json({ message: "ids must be a non-empty array" });
         }
 
-        await Post.bulkWrite(
-            ids.map((id, index) => ({
-                updateOne: {
-                    filter: { _id: id },
-                    update: { $set: { order: index } },
-                },
-            }))
+        // Update each post's position one by one (Mongoose converts the id strings properly here)
+        const results = await Promise.all(
+            ids.map((id, index) =>
+                Post.updateOne({ _id: id }, { $set: { order: index } })
+            )
         );
+        const updated = results.reduce((sum, r) => sum + (r.matchedCount || 0), 0);
+        console.log(`Reorder: ${updated}/${ids.length} posts updated`);
 
-        res.json({ message: "Order saved" });
+        res.json({ message: "Order saved", updated });
 
     } catch (error) {
         console.error("Reorder posts error:", error);

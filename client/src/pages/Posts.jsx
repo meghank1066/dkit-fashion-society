@@ -31,6 +31,7 @@ export default function Posts() {
   const [editingSectionId, setEditingSectionId] = useState(null);
   const [editingTitleText, setEditingTitleText] = useState("");
   const [saveNotification, setSaveNotification] = useState(false);
+  const [orderStatus, setOrderStatus] = useState(null); // null | "saving" | "saved"
 
   // Drag-and-drop state
   const [draggedCard, setDraggedCard] = useState(null); // { sectionId, index }
@@ -294,6 +295,8 @@ const handlePostImageUpload = async (e, postId) => {
   const handleDragStart = (e, sectionId, index) => {
     setDraggedCard({ sectionId, index });
     e.dataTransfer.effectAllowed = "move";
+    // Some browsers (Firefox, Safari) won't start a drag without data attached
+    e.dataTransfer.setData("text/plain", String(index));
   };
 
   const handleDragOver = (e) => {
@@ -325,9 +328,21 @@ const handlePostImageUpload = async (e, postId) => {
       setPosts(newPosts);
 
       // Save the order to the database so the homepage and other visitors see it
+      setOrderStatus("saving");
       API.put("/api/posts/reorder", { ids: newPosts.map((p) => p._id) })
+        .then((res) => {
+          console.log("Order saved:", res.data);
+          setOrderStatus("saved");
+          setTimeout(() => setOrderStatus(null), 2500);
+        })
         .catch((err) => {
           console.error("Failed to save order:", err);
+          setOrderStatus(null);
+          alert(
+            "Couldn't save the new order: " +
+              (err.response?.data?.message || err.message) +
+              (err.response?.status === 401 ? "\n\nTry logging out and back in." : "")
+          );
           fetchPosts();
         });
     }
@@ -344,6 +359,12 @@ const handlePostImageUpload = async (e, postId) => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased">
+      {/* Reorder save status */}
+      {orderStatus && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#011145] text-white text-sm font-semibold px-5 py-2.5 shadow-xl">
+          {orderStatus === "saving" ? "Saving order…" : "✓ Order saved"}
+        </div>
+      )}
       {/* --- Sticky Admin Bar --- */}
       {isAdminUser && (
         <div className="sticky top-0 z-50 bg-slate-900 text-white px-4 sm:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 shadow-lg text-sm font-medium">
