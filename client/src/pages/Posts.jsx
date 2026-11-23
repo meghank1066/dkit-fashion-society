@@ -546,7 +546,7 @@ const handlePostImageUpload = async (e, postId) => {
                         {/* Badges */}
                         <div className="absolute top-10 left-3 sm:top-10 sm:left-4 z-10 flex flex-wrap gap-1.5">
                           {post.isFeatured && (
-                            <span className="bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-md">
+                            <span className="bg-[#011145] text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 shadow-md">
                               ★ Featured
                             </span>
                           )}
@@ -617,7 +617,7 @@ const handlePostImageUpload = async (e, postId) => {
                                 onClick={() => handleToggleFeatured(post._id, post.isFeatured)}
                                 className={`flex-1 px-2 py-1 transition text-center ${
                                   post.isFeatured
-                                    ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                                    ? "bg-[#011145] text-white hover:bg-[#02206e]"
                                     : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
                                 }`}
                               >
