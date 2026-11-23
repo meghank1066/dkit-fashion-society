@@ -206,7 +206,7 @@ export default function Home() {
         </div>
       </section>
       
-      {/* EDITORIALS */}
+      {/* EDITORIALS - "Coming Soon" section, hidden for now. Remove the comment markers to bring it back.
       <section className="w-full pt-20 pb-0 text-center">
         <div className="max-w-3xl mx-auto px-5 sm:px-8 mb-14">
           <span className="text-xs uppercase tracking-[0.3em] font-medium text-gray-400 block mb-3">Creative Portfolio</span>
@@ -230,6 +230,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      */}
 
       {/* MEMBERSHIP & CONTACT */}
       <section className="bg-[#eef2f6] text-[#011145] py-20 px-6 sm:px-12">
