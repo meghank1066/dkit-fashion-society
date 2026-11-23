@@ -2,8 +2,9 @@ import { useEditor, EditorContent, Extension } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import API from "../api/axios";
+import ImageCropper from "./ImageCropper";
 
 // CUSTOM IMAGE EXTENSION
 // Put this HERE (outside the component)
@@ -85,6 +86,7 @@ const Divider = () => <span className="w-px self-stretch bg-gray-200 mx-1" />;
 
 export default function Editor({ content, setContent }) {
   const fileInput = useRef(null);
+  const [cropSrc, setCropSrc] = useState(null); // image being cropped
 
 const editor = useEditor({
     immediatelyRender: false,
@@ -241,6 +243,11 @@ console.log("Uploaded image:", res.data.url);
         <ToolbarButton title="Add image" onClick={() => fileInput.current?.click()}>
           + Image
         </ToolbarButton>
+        {imageSelected && (
+          <ToolbarButton title="Crop the selected image" onClick={() => setCropSrc(editor.getAttributes("image").src)}>
+            ✂ Crop
+          </ToolbarButton>
+        )}
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={uploadEditorImage} />
 
         <Divider />
@@ -260,6 +267,18 @@ console.log("Uploaded image:", res.data.url);
       <div className="bg-white min-h-[600px] px-8 py-10 max-w-none">
         <EditorContent editor={editor} />
       </div>
+
+      {cropSrc && (
+        <ImageCropper
+          src={cropSrc}
+          onCancel={() => setCropSrc(null)}
+          onDone={(url) => {
+            // swap in the cropped copy; the image keeps its left/centre/right setting
+            editor.chain().focus().updateAttributes("image", { src: url }).run();
+            setCropSrc(null);
+          }}
+        />
+      )}
     </div>
   );
 }

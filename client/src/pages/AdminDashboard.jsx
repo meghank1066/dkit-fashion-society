@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import Editor from "../components/Editor";
+import ImageCropper from "../components/ImageCropper";
 import { toDateInputValue } from "../utils/eventDate";
 
 export default function AdminDashboard() {
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   const [category, setCategory] = useState("announcement");
   const [imagePosition, setImagePosition] = useState("center");
   const [eventDate, setEventDate] = useState("");
+  const [croppingCover, setCroppingCover] = useState(false);
 
   const [editingPost, setEditingPost] = useState(null);
 
@@ -287,10 +289,31 @@ const submitPost = async (e) => {
 
                 {/* PREVIEW */}
                 {coverImage && (
-                  <img
+                  <>
+                    <img
+                      src={coverImage}
+                      alt="Cover preview"
+                      className={`w-full h-[350px] rounded-none object-cover object-${imagePosition}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCroppingCover(true)}
+                      className="border border-[#011145] text-[#011145] px-5 py-2 text-sm font-semibold hover:bg-[#011145] hover:text-white transition cursor-pointer"
+                    >
+                      ✂ Crop cover image
+                    </button>
+                  </>
+                )}
+
+                {croppingCover && (
+                  <ImageCropper
                     src={coverImage}
-                    alt="Cover preview"
-                    className={`w-full h-[350px] rounded-none object-cover object-${imagePosition}`}
+                    onCancel={() => setCroppingCover(false)}
+                    onDone={(url) => {
+                      // the Image Center / Top / Bottom setting below still applies
+                      setCoverImage(url);
+                      setCroppingCover(false);
+                    }}
                   />
                 )}
               </div>
