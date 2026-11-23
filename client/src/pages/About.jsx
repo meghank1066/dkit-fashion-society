@@ -231,7 +231,7 @@ export default function About() {
             onClick={handleSaveToLocalStorage}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-semibold transition shadow"
           >
-            {saveNotification ? "✓ Saved!" : "➢ Save Changes"}
+            {saveNotification ? "✓ Saved!" : "Save Changes"}
           </button>
         </div>
       )}
@@ -242,7 +242,7 @@ export default function About() {
           <div className="bg-indigo-50/90 border border-indigo-200/80 p-6 sm:p-8 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-indigo-950 flex items-center gap-2">
-                ⚙️ Admin Dashboard Controls
+                Admin Dashboard Controls
               </h3>
               <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-3 py-1">
                 Active
@@ -336,7 +336,7 @@ export default function About() {
                     onClick={() => handleCopySection(section)}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
                   >
-                    📋 Copy Section to New Year
+                    Copy Section to New Year
                   </button>
                   <button
                     onClick={() => handleAddMember(section.id)}
@@ -348,7 +348,7 @@ export default function About() {
                     onClick={() => handleDeleteSection(section.id)}
                     className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
                   >
-                    🗑️ Delete This Panel
+                    Delete This Panel
                   </button>
                 </div>
               )}
