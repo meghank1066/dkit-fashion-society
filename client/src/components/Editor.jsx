@@ -5,6 +5,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useEffect, useRef, useState } from "react";
 import API from "../api/axios";
 import ImageCropper from "./ImageCropper";
+import PollNode from "./PollNode";
+import PollCreator from "./PollCreator";
 
 // CUSTOM IMAGE EXTENSION
 // Put this HERE (outside the component)
@@ -87,6 +89,7 @@ const Divider = () => <span className="w-px self-stretch bg-gray-200 mx-1" />;
 export default function Editor({ content, setContent }) {
   const fileInput = useRef(null);
   const [cropSrc, setCropSrc] = useState(null); // image being cropped
+  const [addingPoll, setAddingPoll] = useState(false);
 
 const editor = useEditor({
     immediatelyRender: false,
@@ -109,6 +112,8 @@ StarterKit.configure({
       }),
 
       TextAlign,
+
+      PollNode,
     ],
 
     // re-render the toolbar as the cursor moves, so buttons show what's active
@@ -250,6 +255,10 @@ console.log("Uploaded image:", res.data.url);
         )}
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={uploadEditorImage} />
 
+        <ToolbarButton title="Add a poll" onClick={() => setAddingPoll(true)}>
+          📊 Poll
+        </ToolbarButton>
+
         <Divider />
 
         <ToolbarButton title="Undo" onClick={() => editor.chain().focus().undo().run()}>
@@ -267,6 +276,21 @@ console.log("Uploaded image:", res.data.url);
       <div className="bg-white min-h-[600px] px-8 py-10 max-w-none">
         <EditorContent editor={editor} />
       </div>
+
+      {addingPoll && (
+        <PollCreator
+          onCancel={() => setAddingPoll(false)}
+          onCreated={(pollId) => {
+            // insert the poll where the cursor is, with an empty line after it
+            editor
+              .chain()
+              .focus()
+              .insertContent([{ type: "poll", attrs: { pollId } }, { type: "paragraph" }])
+              .run();
+            setAddingPoll(false);
+          }}
+        />
+      )}
 
       {cropSrc && (
         <ImageCropper
