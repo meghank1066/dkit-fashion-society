@@ -3,6 +3,11 @@ import API from "../api/axios";
 import PostCard from "../components/PostCard";
 import { useAuth } from "../context/AuthContext";
 
+const SYSTEM_SECTIONS = [
+  { id: "featured", title: "Featured Posts", isSystem: true },
+  { id: "uncategorized", title: "All Posts", isSystem: true },
+];
+
 export default function Posts() {
   const { user } = useAuth();
   const isAdminUser = user?.role === "admin";
@@ -20,22 +25,7 @@ export default function Posts() {
   const [filter, setFilter] = useState("all"); // 'all' | 'active' | 'archived' | 'featured'
 
   // Dynamic Sections Management State
-  const [sections, setSections] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("post_sections");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Failed to parse saved sections", e);
-        }
-      }
-    }
-    return [
-      { id: "featured", title: "Featured Posts", isSystem: true },
-      { id: "uncategorized", title: "All Posts", isSystem: true },
-    ];
-  });
+  const [sections, setSections] = useState(SYSTEM_SECTIONS);
 
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [editingSectionId, setEditingSectionId] = useState(null);
@@ -50,10 +40,44 @@ export default function Posts() {
     fetchPosts();
   }, []);
 
-  // Save sections to local storage whenever updated
+  // Load custom sections from the database (shared with the homepage and every visitor)
   useEffect(() => {
-    localStorage.setItem("post_sections", JSON.stringify(sections));
-  }, [sections]);
+    API.get("/api/sections")
+      .then((res) => {
+        let custom = res.data;
+
+        // One-time move: sections that were only saved in this browser get uploaded
+        if (custom.length === 0 && isAdminUser) {
+          try {
+            const saved = JSON.parse(localStorage.getItem("post_sections") || "[]");
+            const legacy = saved.filter((sec) => !sec.isSystem && sec.id && sec.title);
+            if (legacy.length > 0) {
+              custom = legacy.map(({ id, title }) => ({ id, title }));
+              API.put("/api/sections", { sections: custom }).catch((err) =>
+                console.error("Failed to move saved sections:", err)
+              );
+            }
+          } catch (e) {
+            console.error("Failed to read saved sections", e);
+          }
+        }
+
+        setSections([...SYSTEM_SECTIONS, ...custom.map((sec) => ({ ...sec, isSystem: false }))]);
+      })
+      .catch((err) => console.error("Error fetching sections:", err));
+  }, [isAdminUser]);
+
+  // Update sections on screen and save the custom ones to the database
+  const persistSections = (next) => {
+    setSections(next);
+    const custom = next
+      .filter((sec) => !sec.isSystem)
+      .map(({ id, title }) => ({ id, title }));
+    return API.put("/api/sections", { sections: custom }).catch((err) => {
+      console.error("Failed to save sections:", err);
+      alert("Couldn't save sections. Are you still logged in?");
+    });
+  };
 
   const fetchPosts = () => {
     setLoading(true);
@@ -85,16 +109,22 @@ export default function Posts() {
       isSystem: false,
     };
 
-    setSections((prev) => [...prev, newSec]);
+    persistSections([...sections, newSec]);
     setNewSectionTitle("");
   };
 
   const handleDeleteSection = (sectionId) => {
     if (window.confirm("Are you sure you want to delete this section? Posts in it will move to All Posts.")) {
-      setSections((prev) => prev.filter((s) => s.id !== sectionId));
+      persistSections(sections.filter((s) => s.id !== sectionId));
+      const affected = posts.filter((p) => p.sectionId === sectionId);
       setPosts((prev) =>
         prev.map((p) =>
           p.sectionId === sectionId ? { ...p, sectionId: "uncategorized" } : p
+        )
+      );
+      affected.forEach((p) =>
+        API.patch(`/api/posts/${p._id}`, { sectionId: "uncategorized" }).catch((err) =>
+          console.error("Failed to move post out of deleted section:", err)
         )
       );
     }
@@ -107,14 +137,14 @@ export default function Posts() {
 
   const handleSaveRenameSection = (sectionId) => {
     if (!editingTitleText.trim()) return;
-    setSections((prev) =>
-      prev.map((s) => (s.id === sectionId ? { ...s, title: editingTitleText.trim() } : s))
+    persistSections(
+      sections.map((s) => (s.id === sectionId ? { ...s, title: editingTitleText.trim() } : s))
     );
     setEditingSectionId(null);
   };
 
-  const handleSaveSections = () => {
-    localStorage.setItem("post_sections", JSON.stringify(sections));
+  const handleSaveSections = async () => {
+    await persistSections(sections);
     setSaveNotification(true);
     setTimeout(() => setSaveNotification(false), 3000);
   };

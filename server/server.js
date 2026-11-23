@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import sectionRoutes from "./routes/sectionRoutes.js";
 
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/sections", sectionRoutes);
 
 // Test route
 app.get("/", (req,res)=>{

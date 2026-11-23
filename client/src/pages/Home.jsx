@@ -14,11 +14,15 @@ const CATEGORY_LABELS = {
 export default function Home() {
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
+  const [customSections, setCustomSections] = useState([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await API.get("/api/posts");
+        const [res, sectionsRes] = await Promise.all([
+          API.get("/api/posts"),
+          API.get("/api/sections").catch(() => ({ data: [] })),
+        ]);
         // Hide archived posts. The API returns posts in the order set by dragging on the blog page.
         const posts = res.data.filter(post => !post.isArchived);
 
@@ -28,6 +32,13 @@ export default function Home() {
         // "Blog" = Editorial posts (set Category to Editorial on the blog page).
         // Featured ones are left out here since they already show under Upcoming Events.
         setBlogPosts(posts.filter(post => post.category === "editorial" && !post.isFeatured));
+
+        // Sections created on the blog page each get their own block on the homepage
+        setCustomSections(
+          sectionsRes.data
+            .map(sec => ({ ...sec, posts: posts.filter(post => post.sectionId === sec.id) }))
+            .filter(sec => sec.posts.length > 0)
+        );
       } catch (error) {
         console.log(error);
       }
@@ -137,6 +148,48 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* CUSTOM SECTIONS (created on the blog page) */}
+      {customSections.map((sec) => (
+        <section key={sec.id} className="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-end mb-12 gap-5">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-serif text-[#011145]">{sec.title}</h2>
+            </div>
+            <Link
+              to="/posts"
+              className="uppercase tracking-widest text-sm font-medium text-[#011145] hover:opacity-60 transition"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {sec.posts.map((post) => (
+              <Link
+                key={post._id}
+                to={`/posts/${post._id}`}
+                className="group border border-gray-200 bg-white overflow-hidden transition hover:shadow-xl flex flex-col"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={post.coverImage}
+                    alt={post.title}
+                    className="w-full h-72 sm:h-80 object-cover group-hover:scale-105 transition duration-500"
+                  />
+                </div>
+                <div className="p-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">
+                    {CATEGORY_LABELS[post.category] || post.category}
+                  </span>
+                  <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
+                  <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ))}
 
       {/* QUOTE BANNER */}
       <section className="relative w-full h-80 sm:h-96 flex items-center justify-center overflow-hidden bg-[#011145]">
