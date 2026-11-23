@@ -596,7 +596,7 @@ const handlePostImageUpload = async (e, postId) => {
 
                             {/* Category (used for the label on the homepage) */}
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[11px] text-gray-500 font-bold uppercase">Category:</span>
+                              <span className="text-[11px] text-gray-500 font-bold uppercase" title="Editorial posts show in the homepage Blog section">Category:</span>
                               <select
                                 value={post.category || "announcement"}
                                 onChange={(e) => handleUpdatePostField(post._id, "category", e.target.value)}
@@ -607,21 +607,9 @@ const handlePostImageUpload = async (e, postId) => {
                                 <option value="fashion">Fashion</option>
                                 <option value="makeup">Beauty</option>
                                 <option value="lifestyle">Lifestyle</option>
-                                <option value="editorial">Editorial</option>
+                                <option value="editorial">Editorial (homepage Blog)</option>
                               </select>
                             </div>
-
-                            {/* Homepage blog toggle */}
-                            <button
-                              onClick={() => handleUpdatePostField(post._id, "showOnHomeBlog", !post.showOnHomeBlog)}
-                              className={`w-full px-2 py-1.5 transition text-center ${
-                                post.showOnHomeBlog
-                                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                                  : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
-                              }`}
-                            >
-                              {post.showOnHomeBlog ? "✓ On homepage blog (click to remove)" : "＋ Show on homepage blog"}
-                            </button>
 
                             {/* Actions Buttons */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/80">

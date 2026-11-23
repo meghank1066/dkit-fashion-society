@@ -19,25 +19,15 @@ export default function Home() {
     const fetchPosts = async () => {
       try {
         const res = await API.get("/api/posts");
-        // Hide archived posts, and show featured posts first.
-        // Otherwise keep the order set in the admin dashboard (the API returns posts in that order).
-        const posts = res.data
-          .filter(post => !post.isArchived)
-          .sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured));
+        // Hide archived posts. The API returns posts in the order set by dragging on the blog page.
+        const posts = res.data.filter(post => !post.isArchived);
 
-        setEvents(posts.filter(post => post.category === "event"));
+        // "Upcoming Events" = featured posts (Feature ★ on the blog page)
+        setEvents(posts.filter(post => post.isFeatured));
 
-        // Homepage blog: posts ticked "Show on homepage blog" in the blog page admin controls,
-        // in the dashboard order. If none are ticked yet, fall back to the newest
-        // fashion, beauty and lifestyle post (the old behaviour).
-        const picked = posts.filter(post => post.showOnHomeBlog);
-        setBlogPosts(
-          picked.length > 0
-            ? picked
-            : ["fashion", "makeup", "lifestyle"]
-                .map(cat => posts.find(post => post.category === cat))
-                .filter(Boolean)
-        );
+        // "Blog" = Editorial posts (set Category to Editorial on the blog page).
+        // Featured ones are left out here since they already show under Upcoming Events.
+        setBlogPosts(posts.filter(post => post.category === "editorial" && !post.isFeatured));
       } catch (error) {
         console.log(error);
       }
@@ -83,7 +73,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.slice(0, 3).map(post => (
+          {events.map(post => (
             <Link
               key={post._id}
               to={`/posts/${post._id}`}
