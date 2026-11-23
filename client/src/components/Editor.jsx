@@ -7,6 +7,7 @@ import API from "../api/axios";
 import ImageCropper from "./ImageCropper";
 import PollNode from "./PollNode";
 import PollCreator from "./PollCreator";
+import VideoNode from "./VideoNode";
 
 // CUSTOM IMAGE EXTENSION
 // Put this HERE (outside the component)
@@ -91,6 +92,42 @@ export default function Editor({ content, setContent }) {
   const [cropSrc, setCropSrc] = useState(null); // image being cropped
   const [addingPoll, setAddingPoll] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(0);
+  const [videoProgress, setVideoProgress] = useState(null); // null or 0-100
+  const videoInput = useRef(null);
+
+  // Upload a video to Cloudinary (it also asks for an automatic transcript) and add it to the post
+  const uploadVideo = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) {
+      return alert("That video is over 100 MB. Try a shorter or compressed version.");
+    }
+    setVideoProgress(0);
+    try {
+      const formData = new FormData();
+      formData.append("video", file);
+      const res = await API.post("/api/videos", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (p) => p.total && setVideoProgress(Math.round((p.loaded / p.total) * 100)),
+      });
+      editorRef.current
+        ?.chain()
+        .focus()
+        .insertContent([
+          { type: "video", attrs: { src: res.data.url, transcriptUrl: res.data.transcriptUrl } },
+          { type: "paragraph" },
+        ])
+        .run();
+      if (!res.data.transcribing) {
+        alert("Video added! Automatic transcripts aren't available on this Cloudinary account, so this one won't have a transcript.");
+      }
+    } catch (err) {
+      alert("Couldn't upload the video: " + (err.response?.data?.message || err.message));
+    } finally {
+      setVideoProgress(null);
+    }
+  };
   const editorRef = useRef(null);
 
   // ---- Pasting / dropping images (e.g. from Pinterest) ----
@@ -187,6 +224,8 @@ StarterKit.configure({
       TextAlign,
 
       PollNode,
+
+      VideoNode,
     ],
 
     // re-render the toolbar as the cursor moves, so buttons show what's active
@@ -349,6 +388,11 @@ console.log("Uploaded image:", res.data.url);
         )}
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={uploadEditorImage} />
 
+        <ToolbarButton title="Add a video" onClick={() => videoInput.current?.click()}>
+          + Video
+        </ToolbarButton>
+        <input ref={videoInput} type="file" accept="video/*" hidden onChange={uploadVideo} />
+
         <ToolbarButton title="Add a poll" onClick={() => setAddingPoll(true)}>
           📊 Poll
         </ToolbarButton>
@@ -362,7 +406,11 @@ console.log("Uploaded image:", res.data.url);
           ↷
         </ToolbarButton>
 
-        {uploadingImages > 0 ? (
+        {videoProgress !== null ? (
+          <span className="ml-auto text-xs font-semibold text-[#011145]">
+            {videoProgress < 100 ? `Uploading video… ${videoProgress}%` : "Processing video…"}
+          </span>
+        ) : uploadingImages > 0 ? (
           <span className="ml-auto text-xs font-semibold text-[#011145]">
             Adding {uploadingImages} image{uploadingImages > 1 ? "s" : ""}…
           </span>

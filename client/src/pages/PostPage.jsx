@@ -5,12 +5,14 @@ import API from "../api/axios";
 import { formatEventDate } from "../utils/eventDate";
 import PollWidget from "../components/PollWidget";
 import Comments from "../components/Comments";
+import VideoTranscript from "../components/VideoTranscript";
 
 export default function PostPage() {
     const { id } = useParams();
     const [post, setPost] = useState(null);
     const contentRef = useRef(null);
     const [pollMounts, setPollMounts] = useState([]); // polls found in the article
+    const [videoMounts, setVideoMounts] = useState([]); // videos with transcripts
 
     // Keep the same object between renders. React 19 rewrites the HTML whenever this
     // object changes, which would wipe out the polls drawn inside the article.
@@ -22,6 +24,14 @@ export default function PostPage() {
         const els = contentRef.current.querySelectorAll("[data-poll-id]");
         setPollMounts(
             Array.from(els).map((el) => ({ el, pollId: el.getAttribute("data-poll-id") }))
+        );
+        const videos = contentRef.current.querySelectorAll("figure[data-transcript-url]");
+        setVideoMounts(
+            Array.from(videos).map((fig) => ({
+                el: fig,
+                videoEl: fig.querySelector("video"),
+                url: fig.getAttribute("data-transcript-url"),
+            }))
         );
     }, [post]);
 
@@ -97,6 +107,9 @@ export default function PostPage() {
     />
     {pollMounts.map(({ el, pollId }) =>
         createPortal(<PollWidget pollId={pollId} />, el, pollId)
+    )}
+    {videoMounts.map(({ el, videoEl, url }) =>
+        createPortal(<VideoTranscript transcriptUrl={url} videoEl={videoEl} />, el, url)
     )}
 </div>
 

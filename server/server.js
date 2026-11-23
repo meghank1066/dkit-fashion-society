@@ -12,6 +12,7 @@ import sectionRoutes from "./routes/sectionRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
+import videoRoutes from "./routes/videoRoutes.js";
 
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use("/api/sections", sectionRoutes);
 app.use("/api/polls", pollRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/videos", videoRoutes);
 
 // Test route
 app.get("/", (req,res)=>{
