@@ -276,14 +276,14 @@ export default function Home() {
                 submitBtn.innerText = "Sending...";
 
                 const formData = new FormData(form);
-                formData.append("access_key", "1a8add07-a5eb-4583-abe7-809cdee29f53s");
-
-
-                console.log("Access key:", formData.get("access_key"));
-
-for (const pair of formData.entries()) {
-  console.log(pair[0], pair[1]);
-}
+                // Web3Forms access key: messages go to the email this key was created with.
+                // (The old key had a stray "s" on the end, so Web3Forms rejected every message.)
+                formData.append("access_key", "1b90dc44-0507-4bd1-959a-181b75f20941");
+                formData.append("from_name", "DkIT Fashion Society website");
+                formData.set(
+                  "subject",
+                  `Website contact: ${formData.get("subject")} (from ${formData.get("first_name")} ${formData.get("last_name")})`
+                );
 
                 try {
                   const response = await fetch("https://api.web3forms.com/submit", {
