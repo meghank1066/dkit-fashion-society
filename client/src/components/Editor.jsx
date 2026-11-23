@@ -2,7 +2,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import API from "../api/axios";
 
 // CUSTOM IMAGE EXTENSION
@@ -56,6 +56,16 @@ StarterKit.configure({
       setContent(editor.getHTML());
     },
   });
+
+  // When the parent loads a different post (e.g. clicking Edit, or resetting the form),
+  // put that post's text into the editor. Without this the editor only reads
+  // `content` once, when it first appears, so edit mode showed an empty box.
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    if ((content || "") !== editor.getHTML()) {
+      editor.commands.setContent(content || "", { emitUpdate: false });
+    }
+  }, [content, editor]);
 
   const uploadEditorImage = async (e) => {
     const file = e.target.files[0];
