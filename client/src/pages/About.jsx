@@ -331,24 +331,24 @@ export default function About() {
 
               {/* Admin Copy, Add Member, and Delete Section Bar */}
               {isAdmin && (
-                <div className="flex flex-wrap justify-center gap-3 pt-3 pb-2">
-                  <button
-                    onClick={() => handleCopySection(section)}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
-                  >
-                    Copy Section to New Year
-                  </button>
+                <div className="flex flex-wrap justify-center gap-2.5 pt-4 pb-2">
                   <button
                     onClick={() => handleAddMember(section.id)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
+                    className="bg-[#011145] text-white border border-[#011145] text-[11px] uppercase tracking-[0.2em] font-semibold px-5 py-2.5 hover:bg-[#02206e] transition cursor-pointer"
                   >
-                    + Add Member Card
+                    Add Member
+                  </button>
+                  <button
+                    onClick={() => handleCopySection(section)}
+                    className="bg-white text-[#011145] border border-[#011145] text-[11px] uppercase tracking-[0.2em] font-semibold px-5 py-2.5 hover:bg-[#011145] hover:text-white transition cursor-pointer"
+                  >
+                    Copy to New Year
                   </button>
                   <button
                     onClick={() => handleDeleteSection(section.id)}
-                    className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 transition shadow-sm"
+                    className="bg-white text-red-600 border border-red-200 text-[11px] uppercase tracking-[0.2em] font-semibold px-5 py-2.5 hover:bg-red-600 hover:text-white hover:border-red-600 transition cursor-pointer"
                   >
-                    Delete This Panel
+                    Delete Panel
                   </button>
                 </div>
               )}
