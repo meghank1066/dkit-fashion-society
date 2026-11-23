@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import API from "../api/axios";
 import { formatEventDate } from "../utils/eventDate";
 import PollWidget from "../components/PollWidget";
+import Comments from "../components/Comments";
 
 export default function PostPage() {
     const { id } = useParams();
@@ -98,6 +99,9 @@ export default function PostPage() {
         createPortal(<PollWidget pollId={pollId} />, el, pollId)
     )}
 </div>
+
+            {/* COMMENTS */}
+            <Comments postId={post._id} />
         </article>
     );
 }

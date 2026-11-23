@@ -1,4 +1,5 @@
 import Post from "../models/Post.js";
+import Comment from "../models/Comment.js";
 
 export const createPost = async (req, res) => {
     try {
@@ -149,6 +150,9 @@ export const deletePost = async (req, res) => {
                 message: "Post not found"
             });
         }
+
+        // tidy up: remove the deleted post's comments too
+        await Comment.deleteMany({ post: post._id });
 
         res.json({
             message: "Post deleted"
