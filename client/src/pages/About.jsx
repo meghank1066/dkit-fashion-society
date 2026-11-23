@@ -314,7 +314,7 @@ export default function About() {
         {committees.map((section) => (
           <section key={section.id} className="relative space-y-8 bg-white p-6 sm:p-10 border border-gray-100 shadow-sm">
             <div className="text-center space-y-3">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+              <h2 className="text-4xl md:text-5xl font-serif text-[#011145]">
                 Society Committee
               </h2>
               <p className="text-indigo-600 font-semibold text-base sm:text-lg">
