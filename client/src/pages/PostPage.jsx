@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
+import { formatEventDate } from "../utils/eventDate";
 
 export default function PostPage() {
     const { id } = useParams();
@@ -63,7 +64,7 @@ export default function PostPage() {
             </span>
             <br />
             <span className="text-gray-500 text-xs">
-                {new Date(post.createdAt).toLocaleDateString()}
+                {post.eventDate ? formatEventDate(post.eventDate) : new Date(post.createdAt).toLocaleDateString()}
             </span>
         </div>
     </div>

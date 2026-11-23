@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import Editor from "../components/Editor";
+import { toDateInputValue } from "../utils/eventDate";
 
 export default function AdminDashboard() {
   const [posts, setPosts] = useState([]);
@@ -14,6 +15,7 @@ export default function AdminDashboard() {
   const [coverImage, setCoverImage] = useState("");
   const [category, setCategory] = useState("announcement");
   const [imagePosition, setImagePosition] = useState("center");
+  const [eventDate, setEventDate] = useState("");
 
   const [editingPost, setEditingPost] = useState(null);
 
@@ -59,6 +61,7 @@ export default function AdminDashboard() {
     setCoverImage("");
     setCategory("announcement");
     setImagePosition("center");
+    setEventDate("");
     setEditingPost(null);
   };
 
@@ -72,6 +75,7 @@ const submitPost = async (e) => {
     coverImage,
     category,
     imagePosition,
+    eventDate: eventDate || null,
   };
 
   try {
@@ -100,6 +104,7 @@ const submitPost = async (e) => {
     setContent(post.content);
     setCategory(post.category);
     setImagePosition(post.imagePosition || "center");
+    setEventDate(toDateInputValue(post.eventDate));
 
     window.scrollTo({
       top: 0,
@@ -319,6 +324,18 @@ const submitPost = async (e) => {
                 <option value="lifestyle">Lifestyle</option>
                 <option value="editorial">Editorial</option>
               </select>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event date <span className="text-gray-400 font-normal">(optional - when the event happens/happened)</span>
+                </label>
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-none p-3 focus:outline-none focus:ring-2 focus:ring-[#011145]"
+                />
+              </div>
 
               <button className="bg-[#011145] text-white px-8 py-3 rounded-none hover:bg-[#020d32] transition cursor-pointer font-semibold">
                 {editingPost ? "Update Post" : "Publish Post"}

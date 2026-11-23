@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../api/axios";
 import PostCard from "../components/PostCard";
 import { useAuth } from "../context/AuthContext";
+import { toDateInputValue } from "../utils/eventDate";
 
 const SYSTEM_SECTIONS = [
   { id: "featured", title: "Featured Posts", isSystem: true },
@@ -291,6 +292,29 @@ const handlePostImageUpload = async (e, postId) => {
     }
   };
 
+  // Put posts in event-date order (newest first; posts without a date go last), then save it.
+  // You can still drag posts around afterwards.
+  const handleSortByEventDate = () => {
+    if (!window.confirm("Sort all posts by event date (newest first)? Posts without a date go to the end. You can still drag to adjust afterwards.")) return;
+    const dated = posts
+      .filter((p) => p.eventDate)
+      .sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
+    const undated = posts.filter((p) => !p.eventDate);
+    const newPosts = [...dated, ...undated];
+    setPosts(newPosts);
+    setOrderStatus("saving");
+    API.put("/api/posts/reorder", { ids: newPosts.map((p) => p._id) })
+      .then(() => {
+        setOrderStatus("saved");
+        setTimeout(() => setOrderStatus(null), 2500);
+      })
+      .catch((err) => {
+        setOrderStatus(null);
+        alert("Couldn't save the new order: " + (err.response?.data?.message || err.message));
+        fetchPosts();
+      });
+  };
+
   // --- Drag and Drop Handlers ---
   const handleDragStart = (e, sectionId, index) => {
     setDraggedCard({ sectionId, index });
@@ -373,6 +397,12 @@ const handlePostImageUpload = async (e, postId) => {
             <span>DKIT Fashion Society - Admin Dashboard</span>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={handleSortByEventDate}
+              className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3 py-1.5 text-xs font-semibold transition shadow-sm"
+            >
+              ⇅ Sort by event date
+            </button>
             <button
               onClick={handleSaveSections}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold transition shadow-sm"
@@ -660,6 +690,17 @@ const handlePostImageUpload = async (e, postId) => {
                                 <option value="lifestyle">Lifestyle</option>
                                 <option value="editorial">Editorial (homepage Blog)</option>
                               </select>
+                            </div>
+
+                            {/* Event date */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] text-gray-500 font-bold uppercase">Event date:</span>
+                              <input
+                                type="date"
+                                value={toDateInputValue(post.eventDate)}
+                                onChange={(e) => handleUpdatePostField(post._id, "eventDate", e.target.value || null)}
+                                className="bg-white border border-gray-300 text-gray-800 px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none flex-1"
+                              />
                             </div>
 
                             {/* Actions Buttons */}

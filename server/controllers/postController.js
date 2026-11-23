@@ -12,6 +12,7 @@ export const createPost = async (req, res) => {
             sectionId,
             isArchived,
             showOnHomeBlog,
+            eventDate,
         } = req.body;
 
         const post = await Post.create({
@@ -24,6 +25,7 @@ export const createPost = async (req, res) => {
             sectionId,
             isArchived,
             showOnHomeBlog,
+            eventDate: eventDate || null,
             author: req.user.id,
         });
 
@@ -93,6 +95,7 @@ export const updatePost = async (req, res) => {
             sectionId,
             isArchived,
             showOnHomeBlog,
+            eventDate,
         } = req.body;
 
         const updates = {};
@@ -106,6 +109,7 @@ export const updatePost = async (req, res) => {
         if (sectionId !== undefined) updates.sectionId = sectionId;
         if (isArchived !== undefined) updates.isArchived = isArchived;
         if (showOnHomeBlog !== undefined) updates.showOnHomeBlog = showOnHomeBlog;
+        if (eventDate !== undefined) updates.eventDate = eventDate || null; // empty clears it
 
         const post = await Post.findByIdAndUpdate(
             req.params.id,

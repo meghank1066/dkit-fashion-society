@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { formatEventDate } from "../utils/eventDate";
 
 
 export default function PostCard({ post }) {
@@ -39,6 +40,9 @@ export default function PostCard({ post }) {
 
                 <p className="uppercase tracking-widest text-sm mb-3">
                     {post.category}
+                    {post.eventDate && (
+                        <span className="text-gray-400"> · {formatEventDate(post.eventDate)}</span>
+                    )}
                 </p>
 
 

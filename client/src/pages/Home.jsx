@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/axios";
+import { formatEventDate, isPastEvent } from "../utils/eventDate";
 
 const CATEGORY_LABELS = {
   announcement: "Announcement",
@@ -26,8 +27,9 @@ export default function Home() {
         // Hide archived posts. The API returns posts in the order set by dragging on the blog page.
         const posts = res.data.filter(post => !post.isArchived);
 
-        // "Upcoming Events" = featured posts (Feature ★ on the blog page)
-        setEvents(posts.filter(post => post.isFeatured));
+        // "Upcoming Events" = featured posts (Feature ★ on the blog page).
+        // Once a post's event date has passed it drops off automatically - no need to unfeature it.
+        setEvents(posts.filter(post => post.isFeatured && !isPastEvent(post)));
 
         // "Blog" = Editorial posts (set Category to Editorial on the blog page).
         // Featured ones are left out here since they already show under Upcoming Events.
@@ -104,6 +106,11 @@ export default function Home() {
                 />
               </div>
               <div className="p-6">
+                {post.eventDate && (
+                  <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">
+                    {formatEventDate(post.eventDate)}
+                  </span>
+                )}
                 <h3 className="text-2xl font-serif">{post.title}</h3>
                 <p className="text-gray-500 mt-3 leading-relaxed">{post.subtitle}</p>
               </div>
@@ -146,6 +153,7 @@ export default function Home() {
               <div className="p-6">
                 <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">
                   {CATEGORY_LABELS[post.category] || post.category}
+                  {post.eventDate && ` · ${formatEventDate(post.eventDate)}`}
                 </span>
                 <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
                 <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>
@@ -187,6 +195,7 @@ export default function Home() {
                 <div className="p-6">
                   <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">
                     {CATEGORY_LABELS[post.category] || post.category}
+                  {post.eventDate && ` · ${formatEventDate(post.eventDate)}`}
                   </span>
                   <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
                   <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>

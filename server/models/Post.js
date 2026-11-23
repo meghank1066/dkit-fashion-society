@@ -57,6 +57,12 @@ showOnHomeBlog: {
     type: Boolean,
     default: false,
 },
+
+// When the event actually happened / happens (optional - announcements may not have one)
+eventDate: {
+    type: Date,
+    default: null,
+},
     },
     {
         timestamps: true,
