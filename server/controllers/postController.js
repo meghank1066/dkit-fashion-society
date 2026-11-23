@@ -11,6 +11,7 @@ export const createPost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
+            showOnHomeBlog,
         } = req.body;
 
         const post = await Post.create({
@@ -22,6 +23,7 @@ export const createPost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
+            showOnHomeBlog,
             author: req.user.id,
         });
 
@@ -43,7 +45,7 @@ export const getPosts = async (req, res) => {
     try {
         const posts = await Post.find()
             .populate("author", "username profilePic") // ✅ Fixed from "user" to "author"
-            .sort({ createdAt: -1 });
+            .sort({ order: 1, createdAt: -1 });
 
         res.json(posts);
 
@@ -90,6 +92,7 @@ export const updatePost = async (req, res) => {
             isFeatured,
             sectionId,
             isArchived,
+            showOnHomeBlog,
         } = req.body;
 
         const updates = {};
@@ -102,6 +105,7 @@ export const updatePost = async (req, res) => {
         if (isFeatured !== undefined) updates.isFeatured = isFeatured;
         if (sectionId !== undefined) updates.sectionId = sectionId;
         if (isArchived !== undefined) updates.isArchived = isArchived;
+        if (showOnHomeBlog !== undefined) updates.showOnHomeBlog = showOnHomeBlog;
 
         const post = await Post.findByIdAndUpdate(
             req.params.id,
@@ -150,5 +154,31 @@ export const deletePost = async (req, res) => {
         res.status(500).json({
             message: error.message
         });
+    }
+};
+
+// Save a new display order. Body: { ids: [postId, postId, ...] } in the order to show them.
+export const reorderPosts = async (req, res) => {
+    try {
+        const { ids } = req.body;
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: "ids must be a non-empty array" });
+        }
+
+        await Post.bulkWrite(
+            ids.map((id, index) => ({
+                updateOne: {
+                    filter: { _id: id },
+                    update: { $set: { order: index } },
+                },
+            }))
+        );
+
+        res.json({ message: "Order saved" });
+
+    } catch (error) {
+        console.error("Reorder posts error:", error);
+        res.status(500).json({ message: error.message });
     }
 };

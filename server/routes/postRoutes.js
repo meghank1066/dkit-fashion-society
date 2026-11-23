@@ -8,7 +8,8 @@ import {
     getPosts,
     getPost,
     updatePost,
-    deletePost
+    deletePost,
+    reorderPosts
 } from "../controllers/postController.js";
 
 const router = express.Router();
@@ -22,6 +23,14 @@ router.get("/:id", getPost);
 
 
 // ADMIN
+
+// must come before "/:id" so "reorder" isn't treated as a post id
+router.put(
+    "/reorder",
+    protect,
+    adminOnly,
+    reorderPosts
+);
 
 router.post(
     "/",

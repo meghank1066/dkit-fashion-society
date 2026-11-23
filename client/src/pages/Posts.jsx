@@ -180,6 +180,19 @@ export default function Posts() {
     }
   };
 
+  // Generic save for a single field on a post (homepage blog toggle, category…)
+  const handleUpdatePostField = async (postId, field, value) => {
+    try {
+      setPosts((prev) =>
+        prev.map((p) => (p._id === postId ? { ...p, [field]: value } : p))
+      );
+      await API.patch(`/api/posts/${postId}`, { [field]: value });
+    } catch (err) {
+      console.error(`Failed to update ${field}:`, err);
+      fetchPosts();
+    }
+  };
+
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to permanently delete this post?"))
       return;
@@ -268,13 +281,25 @@ const handlePostImageUpload = async (e, postId) => {
       const sectionPosts = filteredPosts.filter((p) => 
         targetSectionId === "featured" ? p.isFeatured : p.sectionId === targetSectionId
       );
-      const otherPosts = posts.filter((p) => !sectionPosts.includes(p));
 
       const updatedSectionPosts = [...sectionPosts];
       const [movedPost] = updatedSectionPosts.splice(sourceIndex, 1);
       updatedSectionPosts.splice(targetIndex, 0, movedPost);
 
-      setPosts([...otherPosts, ...updatedSectionPosts]);
+      // Put the reordered section back into the same slots in the full list,
+      // so posts in other sections keep their places.
+      let next = 0;
+      const newPosts = posts.map((p) =>
+        sectionPosts.includes(p) ? updatedSectionPosts[next++] : p
+      );
+      setPosts(newPosts);
+
+      // Save the order to the database so the homepage and other visitors see it
+      API.put("/api/posts/reorder", { ids: newPosts.map((p) => p._id) })
+        .catch((err) => {
+          console.error("Failed to save order:", err);
+          fetchPosts();
+        });
     }
     setDraggedCard(null);
   };
@@ -568,6 +593,35 @@ const handlePostImageUpload = async (e, postId) => {
                                 ))}
                               </select>
                             </div>
+
+                            {/* Category (used for the label on the homepage) */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] text-gray-500 font-bold uppercase">Category:</span>
+                              <select
+                                value={post.category || "announcement"}
+                                onChange={(e) => handleUpdatePostField(post._id, "category", e.target.value)}
+                                className="bg-white border border-gray-300 text-gray-800 px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none flex-1"
+                              >
+                                <option value="announcement">Announcement</option>
+                                <option value="event">Event</option>
+                                <option value="fashion">Fashion</option>
+                                <option value="makeup">Beauty</option>
+                                <option value="lifestyle">Lifestyle</option>
+                                <option value="editorial">Editorial</option>
+                              </select>
+                            </div>
+
+                            {/* Homepage blog toggle */}
+                            <button
+                              onClick={() => handleUpdatePostField(post._id, "showOnHomeBlog", !post.showOnHomeBlog)}
+                              className={`w-full px-2 py-1.5 transition text-center ${
+                                post.showOnHomeBlog
+                                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                  : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
+                              }`}
+                            >
+                              {post.showOnHomeBlog ? "✓ On homepage blog (click to remove)" : "＋ Show on homepage blog"}
+                            </button>
 
                             {/* Actions Buttons */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/80">

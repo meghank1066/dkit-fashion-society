@@ -2,22 +2,42 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/axios";
 
+const CATEGORY_LABELS = {
+  announcement: "Announcement",
+  event: "Event",
+  fashion: "Fashion",
+  makeup: "Beauty",
+  lifestyle: "Lifestyle",
+  editorial: "Editorial",
+};
+
 export default function Home() {
   const [events, setEvents] = useState([]);
-  const [fashionPosts, setFashionPosts] = useState([]);
-  const [makeupPosts, setMakeupPosts] = useState([]);
-  const [lifestylePosts, setLifestylePosts] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await API.get("/api/posts");
-        const posts = res.data;
+        // Hide archived posts, and show featured posts first.
+        // Otherwise keep the order set in the admin dashboard (the API returns posts in that order).
+        const posts = res.data
+          .filter(post => !post.isArchived)
+          .sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured));
 
         setEvents(posts.filter(post => post.category === "event"));
-        setFashionPosts(posts.filter(post => post.category === "fashion"));
-        setMakeupPosts(posts.filter(post => post.category === "makeup"));
-        setLifestylePosts(posts.filter(post => post.category === "lifestyle"));
+
+        // Homepage blog: posts ticked "Show on homepage blog" in the blog page admin controls,
+        // in the dashboard order. If none are ticked yet, fall back to the newest
+        // fashion, beauty and lifestyle post (the old behaviour).
+        const picked = posts.filter(post => post.showOnHomeBlog);
+        setBlogPosts(
+          picked.length > 0
+            ? picked
+            : ["fashion", "makeup", "lifestyle"]
+                .map(cat => posts.find(post => post.category === cat))
+                .filter(Boolean)
+        );
       } catch (error) {
         console.log(error);
       }
@@ -103,8 +123,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Fashion Category */}
-          {fashionPosts.slice(0, 1).map((post) => (
+          {blogPosts.map((post) => (
             <Link
               key={post._id}
               to={`/posts/${post._id}`}
@@ -118,51 +137,9 @@ export default function Home() {
                 />
               </div>
               <div className="p-6">
-                <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">Fashion</span>
-                <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
-                <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>
-              </div>
-            </Link>
-          ))}
-
-          {/* Beauty / Makeup Category */}
-          {makeupPosts.slice(0, 1).map((post) => (
-            <Link
-              key={post._id}
-              to={`/posts/${post._id}`}
-              className="group border border-gray-200 bg-white overflow-hidden transition hover:shadow-xl flex flex-col"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="w-full h-72 sm:h-80 object-cover group-hover:scale-105 transition duration-500"
-                />
-              </div>
-              <div className="p-6">
-                <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">Beauty</span>
-                <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
-                <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>
-              </div>
-            </Link>
-          ))}
-
-          {/* Lifestyle Category */}
-          {lifestylePosts.slice(0, 1).map((post) => (
-            <Link
-              key={post._id}
-              to={`/posts/${post._id}`}
-              className="group border border-gray-200 bg-white overflow-hidden transition hover:shadow-xl flex flex-col"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="w-full h-72 sm:h-80 object-cover group-hover:scale-105 transition duration-500"
-                />
-              </div>
-              <div className="p-6">
-                <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">Lifestyle</span>
+                <span className="text-xs uppercase tracking-widest font-semibold text-gray-400 block mb-2">
+                  {CATEGORY_LABELS[post.category] || post.category}
+                </span>
                 <h3 className="text-2xl font-serif text-[#011145]">{post.title}</h3>
                 <p className="text-gray-500 mt-3 leading-relaxed line-clamp-2">{post.subtitle || post.excerpt}</p>
               </div>

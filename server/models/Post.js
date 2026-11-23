@@ -47,6 +47,16 @@ isArchived: {
     type: Boolean,
     default: false,
 },
+
+order: {
+    type: Number,
+    default: 0,
+},
+
+showOnHomeBlog: {
+    type: Boolean,
+    default: false,
+},
     },
     {
         timestamps: true,
