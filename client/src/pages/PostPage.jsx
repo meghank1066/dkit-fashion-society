@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
@@ -10,6 +10,10 @@ export default function PostPage() {
     const [post, setPost] = useState(null);
     const contentRef = useRef(null);
     const [pollMounts, setPollMounts] = useState([]); // polls found in the article
+
+    // Keep the same object between renders. React 19 rewrites the HTML whenever this
+    // object changes, which would wipe out the polls drawn inside the article.
+    const articleHtml = useMemo(() => ({ __html: post?.content || "" }), [post]);
 
     // Turn each <div data-poll-id> in the article into a live, votable poll
     useEffect(() => {
@@ -88,9 +92,7 @@ export default function PostPage() {
     <div
         className="rich-text prose prose-lg max-w-none [&_p]:mb-6 [&_p:empty]:h-6 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:text-black [&_ul]:mb-6 [&_ol]:mb-6"
         ref={contentRef}
-        dangerouslySetInnerHTML={{
-            __html: post.content
-        }}
+        dangerouslySetInnerHTML={articleHtml}
     />
     {pollMounts.map(({ el, pollId }) =>
         createPortal(<PollWidget pollId={pollId} />, el, pollId)

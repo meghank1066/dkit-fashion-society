@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/axios";
+import { useAuth } from "../context/AuthContext";
+import { useHeroPhoto, ChangeHeroPhotoButton } from "../components/HeroPhoto";
 import { formatEventDate, isPastEvent } from "../utils/eventDate";
 
 const CATEGORY_LABELS = {
@@ -13,6 +15,9 @@ const CATEGORY_LABELS = {
 };
 
 export default function Home() {
+  const { user } = useAuth();
+  const isAdminUser = user?.role === "admin";
+  const [heroImage, setHeroImage] = useHeroPhoto("home", "/images/webdesign/hero/hero-img4.jpg");
   const [events, setEvents] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [customSections, setCustomSections] = useState([]);
@@ -60,7 +65,7 @@ export default function Home() {
       {/* HERO */}
       <section className="relative min-h-[80vh] flex items-center justify-center bg-[#030f36] text-white py-48 md:py-60 px-6 text-center overflow-hidden">
         <img 
-          src="/images/webdesign/hero/hero-img4.jpg" 
+          src={heroImage}
           alt="DKIT Fashion Society Hero Background" 
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
@@ -72,6 +77,13 @@ export default function Home() {
             A creative community celebrating fashion, self-expression, photography and student collaboration.
           </h2>
         </div>
+
+        {/* Admins only: change the homepage cover photo */}
+        {isAdminUser && (
+          <div className="absolute bottom-6 right-6 z-20">
+            <ChangeHeroPhotoButton pageKey="home" onChange={setHeroImage} />
+          </div>
+        )}
       </section>
 
       {/* EVENTS */}

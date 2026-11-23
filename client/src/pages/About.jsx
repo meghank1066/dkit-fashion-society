@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHeroPhoto, ChangeHeroPhotoButton } from "../components/HeroPhoto";
 
 export default function About() {
   // 1. Dynamic State for Committee Sections
@@ -46,6 +47,7 @@ export default function About() {
 
   // Admin state controls
   const [isAdmin, setIsAdmin] = useState(false);
+  const [heroImage, setHeroImage] = useHeroPhoto("about", "/images/webdesign/members/abouthero.png");
   const [newSectionTitle, setNewSectionTitle] = useState("Academic Year 2026 – 2027");
   const [saveNotification, setSaveNotification] = useState(false);
 
@@ -274,7 +276,7 @@ export default function About() {
       <section className="relative overflow-hidden text-white py-16 sm:py-24 md:py-32 px-4 sm:px-6 lg:px-8 text-center">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/webdesign/members/abouthero.png')" }}
+          style={{ backgroundImage: `url('${heroImage}')` }}
         />
         <div className="absolute inset-0 bg-[#0B132B]/85 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
@@ -286,6 +288,12 @@ export default function About() {
           <p className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed px-2">
             A creative community where students can explore fashion, express individuality, and celebrate personal style.
           </p>
+
+          {isAdmin && (
+            <div className="pt-2">
+              <ChangeHeroPhotoButton pageKey="about" onChange={setHeroImage} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -389,7 +397,7 @@ export default function About() {
                     {/* Admin Image Upload Overlay */}
                     {isAdmin && (
                       <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center text-white text-xs font-medium cursor-pointer transition p-2 text-center">
-                        <span>📷 Click to Change Image</span>
+                        <span>Change photo</span>
                         <input
                           type="file"
                           accept="image/*"

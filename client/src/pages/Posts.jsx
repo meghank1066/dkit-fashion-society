@@ -3,6 +3,7 @@ import API from "../api/axios";
 import PostCard from "../components/PostCard";
 import { useAuth } from "../context/AuthContext";
 import { toDateInputValue } from "../utils/eventDate";
+import { useHeroPhoto, ChangeHeroPhotoButton } from "../components/HeroPhoto";
 
 const SYSTEM_SECTIONS = [
   { id: "featured", title: "Featured Posts", isSystem: true },
@@ -17,9 +18,7 @@ export default function Posts() {
   const [loading, setLoading] = useState(true);
 
   // Hero Cover Photo State
-  const [heroImage, setHeroImage] = useState(
-    "/images/webdesign/members/abouthero.png"
-  );
+  const [heroImage, setHeroImage] = useHeroPhoto("posts", "/images/webdesign/members/abouthero.png");
 
   // Admin Controls State
   const [isAdminMode, setIsAdminMode] = useState(false);
@@ -285,12 +284,6 @@ const handlePostImageUpload = async (e, postId) => {
         console.error("Failed to upload image:", err);
     }
 };
-  const handleHeroImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setHeroImage(URL.createObjectURL(file));
-    }
-  };
 
   // Put posts in event-date order (newest first; posts without a date go last), then save it.
   // You can still drag posts around afterwards.
@@ -501,15 +494,7 @@ const handlePostImageUpload = async (e, postId) => {
 
           {isAdminUser && isAdminMode && (
             <div className="pt-4">
-              <label className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white px-4 py-2 text-xs font-semibold cursor-pointer transition">
-                <span> 📷 Edit Hero Cover Photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleHeroImageUpload}
-                />
-              </label>
+              <ChangeHeroPhotoButton pageKey="posts" onChange={setHeroImage} />
             </div>
           )}
         </div>
@@ -641,7 +626,7 @@ const handlePostImageUpload = async (e, postId) => {
                         {/* Admin Cover Photo Hover Button */}
                         {isAdminUser && isAdminMode && (
                           <label className="absolute top-10 right-3 sm:top-10 sm:right-4 z-20 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-2.5 py-1.5 cursor-pointer transition shadow-md flex items-center gap-1">
-                            <span>📷 Cover</span>
+                            <span>Change cover</span>
                             <input
                               type="file"
                               accept="image/*"
