@@ -367,19 +367,19 @@ console.log("Uploaded image:", res.data.url);
         <Divider />
 
         <ToolbarButton title={imageSelected ? "Image left" : "Align text left"} active={isAligned("left")} onClick={() => align("left")}>
-          ⇤ Left
+          Left-Aligned
         </ToolbarButton>
         <ToolbarButton title={imageSelected ? "Image centre" : "Centre text"} active={isAligned("center")} onClick={() => align("center")}>
-          ↔ Centre
+          Centre-Aligned
         </ToolbarButton>
         <ToolbarButton title={imageSelected ? "Image right" : "Align text right"} active={isAligned("right")} onClick={() => align("right")}>
-          Right ⇥
+          Right-Aligned
         </ToolbarButton>
 
         <Divider />
 
         <ToolbarButton title="Add image" onClick={() => fileInput.current?.click()}>
-          + Image
+          Add Image
         </ToolbarButton>
         {imageSelected && (
           <ToolbarButton title="Crop the selected image" onClick={() => setCropSrc(editor.getAttributes("image").src)}>
@@ -389,21 +389,21 @@ console.log("Uploaded image:", res.data.url);
         <input ref={fileInput} type="file" accept="image/*" hidden onChange={uploadEditorImage} />
 
         <ToolbarButton title="Add a video" onClick={() => videoInput.current?.click()}>
-          + Video
+          Add Video
         </ToolbarButton>
         <input ref={videoInput} type="file" accept="video/*" hidden onChange={uploadVideo} />
 
         <ToolbarButton title="Add a poll" onClick={() => setAddingPoll(true)}>
-          📊 Poll
+          Poll
         </ToolbarButton>
 
         <Divider />
 
         <ToolbarButton title="Undo" onClick={() => editor.chain().focus().undo().run()}>
-          ↶
+          ↶ Undo
         </ToolbarButton>
         <ToolbarButton title="Redo" onClick={() => editor.chain().focus().redo().run()}>
-          ↷
+          ↷ Redo
         </ToolbarButton>
 
         {videoProgress !== null ? (
