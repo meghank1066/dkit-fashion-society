@@ -127,7 +127,7 @@ export default function Register() {
           <input
             id="reg-username"
             type="text"
-            placeholder="e.g. meghan_k"
+            placeholder="Choose a username"
             value={username}
             autoComplete="username"
             onChange={(e) => setUsername(e.target.value)}
@@ -141,7 +141,7 @@ export default function Register() {
           <input
             id="reg-email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="Your email address"
             value={email}
             autoComplete="email"
             onChange={(e) => setEmail(e.target.value)}
