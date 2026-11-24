@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validatePassword from "../utils/passwordValidator.js";
-import nodemailer from "nodemailer";
+import sendEmail from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
 
@@ -149,63 +149,45 @@ export const getMe = async (req, res) => {
 
 
 
-// UPDATED FORGOT PASSWORD CONTROLLER
+// FORGOT PASSWORD: email a reset link (valid 15 minutes, works once)
 export const forgotPassword = async (req, res) => {
+  const genericReply = {
+    message: "If an account with that email exists, a password reset link has been sent. Check your spam folder too.",
+  };
+
   try {
-    const { email } = req.body;
-
+    const email = String(req.body.email || "").trim().toLowerCase();
     const user = await User.findOne({ email });
-    if (!user) {
-      // Don't reveal user existence for security, or send 404 if preferred
-      return res.status(200).json({
-        message: "If an account with that email exists, a password reset link has been sent."
-      });
-    }
 
-    // 1. Generate JWT Token valid for 15 mins
-    const resetToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    // Same reply either way, so nobody can use this to check who has an account
+    if (!user) return res.status(200).json(genericReply);
 
-    // 2. Build Reset Link
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
-    // 3. Configure Transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+    // Signed with the user's current password hash, so the link stops working once it's been used
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET + user.password, {
+      expiresIn: "15m",
     });
 
-    // 4. Send Email
-    await transporter.sendMail({
-      from: `"DkIT Fashion Society" <${process.env.EMAIL_USER}>`,
+    const siteUrl = (process.env.CLIENT_URL || "https://www.dkitfashionsociety.com").replace(/\/$/, "");
+    const resetUrl = `${siteUrl}/reset-password/${resetToken}`;
+
+    await sendEmail({
       to: user.email,
-      subject: "Password Reset Request",
+      subject: "Reset your DkIT Fashion Society password",
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Reset Your Password</h2>
-          <p>You requested a password reset. Click the button below to update your password:</p>
-          <a href="${resetUrl}" style="background-color: #000; color: #fff; padding: 10px 20px; text-decoration: none; display: inline-block; margin: 15px 0;">
-            Reset Password
-          </a>
-          <p style="color: #666; font-size: 12px;">This link will expire in 15 minutes.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; border: 1px solid #e5e7eb;">
+          <p style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #9ca3af; margin: 0;">DkIT Fashion Society</p>
+          <h2 style="font-family: Georgia, serif; font-weight: normal; color: #011145; font-size: 28px; margin: 12px 0 16px;">Reset your password</h2>
+          <p style="color: #4b5563; line-height: 1.6;">Hi ${user.username}, someone (hopefully you!) asked to reset your password. Click below to choose a new one.</p>
+          <a href="${resetUrl}" style="background: #011145; color: #ffffff; padding: 12px 28px; text-decoration: none; display: inline-block; margin: 20px 0;">Reset password</a>
+          <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">This link expires in 15 minutes and can only be used once. If you didn't ask for this, you can ignore this email and your password won't change.</p>
         </div>
-      `
+      `,
     });
 
-    res.status(200).json({
-      message: "If an account with that email exists, a password reset link has been sent."
-    });
-
+    res.status(200).json(genericReply);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Forgot password email error:", error);
+    res.status(500).json({ message: "We couldn't send the reset email right now. Please try again in a few minutes." });
   }
 };
 
@@ -221,21 +203,21 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findById(decoded.id);
+    // Find whose link it is, then check it with their current password hash
+    // (so a link that's already been used, or is older than 15 minutes, is rejected)
+    const unverified = jwt.decode(token);
+    const user = unverified?.id ? await User.findById(unverified.id) : null;
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid or expired link. Please request a new one." });
     }
+    jwt.verify(token, process.env.JWT_SECRET + user.password);
 
-    // Hash and update password
     user.password = await bcrypt.hash(password, 10);
     await user.save();
 
     res.status(200).json({ message: "Password updated successfully!" });
   } catch (error) {
-    res.status(400).json({ message: "Invalid or expired token." });
+    res.status(400).json({ message: "Invalid or expired link. Please request a new one." });
   }
 };
 
