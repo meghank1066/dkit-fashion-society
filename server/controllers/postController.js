@@ -190,3 +190,27 @@ export const reorderPosts = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+// Count a view. Ignores repeat views of the same post from the same connection within 30 minutes.
+const recentViews = new Map();
+export const recordView = async (req, res) => {
+    try {
+        const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
+        const key = `${ip}:${req.params.id}`;
+        const now = Date.now();
+        if (recentViews.has(key) && now - recentViews.get(key) < 30 * 60 * 1000) {
+            return res.json({ counted: false });
+        }
+        recentViews.set(key, now);
+        if (recentViews.size > 5000) {
+            for (const [k, t] of recentViews) if (now - t > 30 * 60 * 1000) recentViews.delete(k);
+        }
+
+        // timestamps: false so a view doesn't change the post's "last updated" date
+        await Post.updateOne({ _id: req.params.id }, { $inc: { views: 1 } }, { timestamps: false });
+        res.json({ counted: true });
+    } catch (error) {
+        res.status(400).json({ message: "Couldn't record view" });
+    }
+};

@@ -9,7 +9,8 @@ import {
     getPost,
     updatePost,
     deletePost,
-    reorderPosts
+    reorderPosts,
+    recordView
 } from "../controllers/postController.js";
 
 const router = express.Router();
@@ -20,6 +21,8 @@ const router = express.Router();
 router.get("/", getPosts);
 
 router.get("/:id", getPost);
+
+router.post("/:id/view", recordView);
 
 
 // ADMIN

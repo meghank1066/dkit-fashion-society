@@ -63,6 +63,12 @@ eventDate: {
     type: Date,
     default: null,
 },
+
+// how many times the article has been opened (admins' own visits aren't counted)
+views: {
+    type: Number,
+    default: 0,
+},
     },
     {
         timestamps: true,

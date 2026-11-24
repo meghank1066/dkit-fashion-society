@@ -395,9 +395,14 @@ const submitPost = async (e) => {
                       {post.title}
                     </h3>
 
-                    <span className="inline-block mt-3 bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-3 py-1 rounded-none">
-                      {post.category}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      <span className="inline-block bg-[#eef2f6] text-[#011145] text-xs uppercase tracking-widest px-3 py-1 rounded-none">
+                        {post.category}
+                      </span>
+                      <span className="inline-block border border-[#011145]/20 text-[#011145] text-xs uppercase tracking-widest px-3 py-1">
+                        {(post.views || 0).toLocaleString()} {post.views === 1 ? "view" : "views"}
+                      </span>
+                    </div>
 
                     <p className="text-gray-600 mt-4 leading-relaxed">
                       {getExcerpt(post.content)}

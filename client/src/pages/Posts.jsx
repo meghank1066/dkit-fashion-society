@@ -660,6 +660,14 @@ const handlePostImageUpload = async (e, postId) => {
                               </select>
                             </div>
 
+                            {/* Views */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[11px] text-gray-500 font-bold uppercase">Views:</span>
+                              <span className="text-xs font-semibold text-[#011145]">
+                                {(post.views || 0).toLocaleString()}
+                              </span>
+                            </div>
+
                             {/* Category (used for the label on the homepage) */}
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-[11px] text-gray-500 font-bold uppercase" title="Editorial posts show in the homepage Blog section">Category:</span>

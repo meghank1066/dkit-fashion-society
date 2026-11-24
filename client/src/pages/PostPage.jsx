@@ -6,9 +6,25 @@ import { formatEventDate } from "../utils/eventDate";
 import PollWidget from "../components/PollWidget";
 import Comments from "../components/Comments";
 import VideoTranscript from "../components/VideoTranscript";
+import { useAuth } from "../context/AuthContext";
 
 export default function PostPage() {
     const { id } = useParams();
+    const { user } = useAuth();
+
+    // Count a view (once per browser every 12 hours; admins' own visits don't count)
+    useEffect(() => {
+        if (!id || user?.role === "admin") return;
+        try {
+            const key = `viewed_${id}`;
+            const last = Number(localStorage.getItem(key) || 0);
+            if (Date.now() - last < 12 * 60 * 60 * 1000) return;
+            localStorage.setItem(key, String(Date.now()));
+        } catch {
+            /* storage blocked: still count */
+        }
+        API.post(`/api/posts/${id}/view`).catch(() => {});
+    }, [id, user?.role]);
     const [post, setPost] = useState(null);
     const contentRef = useRef(null);
     const [pollMounts, setPollMounts] = useState([]); // polls found in the article
