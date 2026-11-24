@@ -7,23 +7,26 @@ import PollWidget from "../components/PollWidget";
 import Comments from "../components/Comments";
 import VideoTranscript from "../components/VideoTranscript";
 import { useAuth } from "../context/AuthContext";
+import { hasCookieConsent } from "../components/CookieBanner";
 
 export default function PostPage() {
     const { id } = useParams();
     const { user } = useAuth();
 
-    // Count a view (once per browser every 12 hours; admins' own visits don't count)
+    // Count a view every time someone opens the article - only if they've accepted cookies.
+    // Admins' own visits don't count. If they accept while reading, this visit counts too.
     useEffect(() => {
         if (!id || user?.role === "admin") return;
-        try {
-            const key = `viewed_${id}`;
-            const last = Number(localStorage.getItem(key) || 0);
-            if (Date.now() - last < 12 * 60 * 60 * 1000) return;
-            localStorage.setItem(key, String(Date.now()));
-        } catch {
-            /* storage blocked: still count */
-        }
-        API.post(`/api/posts/${id}/view`).catch(() => {});
+        let counted = false;
+        const count = () => {
+            if (counted || !hasCookieConsent()) return;
+            counted = true;
+            API.post(`/api/posts/${id}/view`).catch(() => {});
+        };
+        count();
+        const onConsent = (e) => e.detail === "accepted" && count();
+        window.addEventListener("cookie-consent", onConsent);
+        return () => window.removeEventListener("cookie-consent", onConsent);
     }, [id, user?.role]);
     const [post, setPost] = useState(null);
     const contentRef = useRef(null);

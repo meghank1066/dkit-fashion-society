@@ -1,5 +1,17 @@
 import Post from "../models/Post.js";
 import Comment from "../models/Comment.js";
+import jwt from "jsonwebtoken";
+
+// True if the request comes from a logged-in admin (view counts are only shown to admins)
+const isAdminRequest = (req) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) return false;
+        return jwt.verify(token, process.env.JWT_SECRET).role === "admin";
+    } catch {
+        return false;
+    }
+};
 
 export const createPost = async (req, res) => {
     try {
@@ -47,6 +59,7 @@ export const createPost = async (req, res) => {
 export const getPosts = async (req, res) => {
     try {
         const posts = await Post.find()
+            .select(isAdminRequest(req) ? "" : "-views") // view counts are private to admins
             .populate("author", "username profilePic") // ✅ Fixed from "user" to "author"
             .sort({ order: 1, createdAt: -1 });
 
@@ -64,6 +77,7 @@ export const getPost = async (req, res) => {
         console.log("Searching for post ID:", req.params.id);
 
         const post = await Post.findById(req.params.id)
+            .select(isAdminRequest(req) ? "" : "-views") // view counts are private to admins
             .populate("author", "username profilePic");
 
         console.log("Found post:", post);
@@ -192,24 +206,24 @@ export const reorderPosts = async (req, res) => {
 };
 
 
-// Count a view. Ignores repeat views of the same post from the same connection within 30 minutes.
+// Count a view - every visit counts. (Only a few seconds' guard against an accidental double send.)
 const recentViews = new Map();
 export const recordView = async (req, res) => {
     try {
         const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
         const key = `${ip}:${req.params.id}`;
         const now = Date.now();
-        if (recentViews.has(key) && now - recentViews.get(key) < 30 * 60 * 1000) {
+        if (recentViews.has(key) && now - recentViews.get(key) < 5 * 1000) {
             return res.json({ counted: false });
         }
         recentViews.set(key, now);
         if (recentViews.size > 5000) {
-            for (const [k, t] of recentViews) if (now - t > 30 * 60 * 1000) recentViews.delete(k);
+            for (const [k, t] of recentViews) if (now - t > 5 * 1000) recentViews.delete(k);
         }
 
         // timestamps: false so a view doesn't change the post's "last updated" date
         await Post.updateOne({ _id: req.params.id }, { $inc: { views: 1 } }, { timestamps: false });
-        res.json({ counted: true });
+        res.json({ counted: true }); // the count itself is never sent back to the public
     } catch (error) {
         res.status(400).json({ message: "Couldn't record view" });
     }

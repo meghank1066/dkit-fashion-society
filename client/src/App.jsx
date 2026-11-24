@@ -14,6 +14,7 @@ import About from "./pages/About";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import UserProfile from "./pages/Profile";
+import CookieBanner from "./components/CookieBanner";
 
 function App() {
 
@@ -67,6 +68,8 @@ element={<PostPage />}
 <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
+
+      <CookieBanner />
 
     </BrowserRouter>
 
