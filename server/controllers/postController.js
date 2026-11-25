@@ -26,21 +26,27 @@ export const createPost = async (req, res) => {
             isArchived,
             showOnHomeBlog,
             eventDate,
+            status,
         } = req.body;
 
+        const isDraft = status === "draft";
         const post = await Post.create({
-            title,
+            title: isDraft && !String(title || "").trim() ? "Untitled draft" : title,
             subtitle,
             coverImage,
-            content,
+            content: isDraft && !content ? "<p></p>" : content,
             category,
             isFeatured,
             sectionId,
             isArchived,
             showOnHomeBlog,
             eventDate: eventDate || null,
+            status: isDraft ? "draft" : "published",
+            lastEditedBy: req.user.id,
             author: req.user.id,
         });
+
+        await post.populate("lastEditedBy", "username");
 
         res.status(201).json({
             message: "Post created",
@@ -58,7 +64,7 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
     try {
-        const posts = await Post.find()
+        const posts = await Post.find({ status: { $ne: "draft" } })
             .select(isAdminRequest(req) ? "" : "-views") // view counts are private to admins
             .populate("author", "username profilePic") // ✅ Fixed from "user" to "author"
             .sort({ order: 1, createdAt: -1 });
@@ -82,7 +88,7 @@ export const getPost = async (req, res) => {
 
         console.log("Found post:", post);
 
-        if (!post) {
+        if (!post || (post.status === "draft" && !isAdminRequest(req))) {
             return res.status(404).json({
                 message: "Post not found"
             });
@@ -111,9 +117,24 @@ export const updatePost = async (req, res) => {
             isArchived,
             showOnHomeBlog,
             eventDate,
+            status,
+            expectedUpdatedAt,
         } = req.body;
 
-        const updates = {};
+        // If two admins have the same draft open, don't let one silently overwrite the other
+        if (expectedUpdatedAt) {
+            const current = await Post.findById(req.params.id)
+                .select("updatedAt lastEditedBy")
+                .populate("lastEditedBy", "username");
+            if (current && new Date(current.updatedAt).getTime() !== new Date(expectedUpdatedAt).getTime()) {
+                return res.status(409).json({
+                    message: `${current.lastEditedBy?.username || "Another admin"} saved changes to this post after you opened it.`,
+                    conflict: true,
+                });
+            }
+        }
+
+        const updates = { lastEditedBy: req.user.id };
 
         if (title !== undefined) updates.title = title;
         if (subtitle !== undefined) updates.subtitle = subtitle;
@@ -125,6 +146,7 @@ export const updatePost = async (req, res) => {
         if (isArchived !== undefined) updates.isArchived = isArchived;
         if (showOnHomeBlog !== undefined) updates.showOnHomeBlog = showOnHomeBlog;
         if (eventDate !== undefined) updates.eventDate = eventDate || null; // empty clears it
+        if (status === "draft" || status === "published") updates.status = status;
 
         const post = await Post.findByIdAndUpdate(
             req.params.id,
@@ -133,7 +155,7 @@ export const updatePost = async (req, res) => {
                 new: true,
                 runValidators: true,
             }
-        );
+        ).populate("lastEditedBy", "username");
 
         if (!post) {
             return res.status(404).json({
@@ -226,5 +248,19 @@ export const recordView = async (req, res) => {
         res.json({ counted: true }); // the count itself is never sent back to the public
     } catch (error) {
         res.status(400).json({ message: "Couldn't record view" });
+    }
+};
+
+
+// ADMIN: every admin's drafts, most recently edited first
+export const getDrafts = async (req, res) => {
+    try {
+        const drafts = await Post.find({ status: "draft" })
+            .populate("author", "username profilePic")
+            .populate("lastEditedBy", "username")
+            .sort({ updatedAt: -1 });
+        res.json(drafts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

@@ -64,6 +64,20 @@ eventDate: {
     default: null,
 },
 
+// "draft" = only admins can see it; "published" = live on the site
+status: {
+    type: String,
+    enum: ["draft", "published"],
+    default: "published",
+},
+
+// the admin who saved it most recently
+lastEditedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+},
+
 // how many times the article has been opened (admins' own visits aren't counted)
 views: {
     type: Number,

@@ -10,7 +10,8 @@ import {
     updatePost,
     deletePost,
     reorderPosts,
-    recordView
+    recordView,
+    getDrafts
 } from "../controllers/postController.js";
 
 const router = express.Router();
@@ -19,6 +20,9 @@ const router = express.Router();
 // PUBLIC
 
 router.get("/", getPosts);
+
+// ADMIN: all drafts (must come before "/:id")
+router.get("/drafts", protect, adminOnly, getDrafts);
 
 router.get("/:id", getPost);
 
