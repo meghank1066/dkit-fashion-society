@@ -6,7 +6,7 @@ import adminOnly from "../middleware/adminMiddleware.js";
 const router = express.Router();
 
 // Only these settings can be read/changed through the API
-const ALLOWED = new Set(["hero-home", "hero-posts", "hero-about"]);
+const ALLOWED = new Set(["hero-home", "hero-posts", "hero-about", "calendar-year"]);
 
 // PUBLIC: read one setting
 router.get("/:key", async (req, res) => {

@@ -16,6 +16,12 @@ const academicStartYear = () => {
   const now = new Date();
   return now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
 };
+// 2026 for anything from Aug 2026 to Jul 2027
+const academicYearOf = (date) => {
+  const d = new Date(date);
+  return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+};
+const yearLabel = (y) => `${y}–${String(y + 1).slice(2)}`;
 const defaultSemester = () => (new Date().getMonth() >= 7 ? 1 : 2);
 
 const btn = "text-[11px] font-semibold px-3 py-1.5 border transition cursor-pointer";
@@ -38,27 +44,62 @@ export default function SocietyCalendar() {
   const [form, setForm] = useState({});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  // the year the homepage shows (set by admins with "Start new academic year"), and the year being viewed
+  const [currentYear, setCurrentYear] = useState(academicStartYear);
+  const [viewYear, setViewYear] = useState(academicStartYear);
 
   useEffect(() => {
-    API.get("/api/calendar")
-      .then((res) => {
+    Promise.all([
+      API.get("/api/calendar"),
+      API.get("/api/settings/calendar-year").catch(() => ({ data: {} })),
+    ])
+      .then(([res, yearRes]) => {
+        const year = Number(yearRes.data?.value) || academicStartYear();
+        setCurrentYear(year);
+        setViewYear(year);
         setEvents(res.data);
         // open on the semester with the next upcoming event (e.g. semester 2 once semester 1 is done)
         const next = res.data
-          .filter((e) => !isPast(e))
+          .filter((e) => !isPast(e) && academicYearOf(e.date) === year)
           .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
         if (next) setSemester(next.semester);
+        else if (year !== academicStartYear()) setSemester(1); // a brand-new year starts on semester 1
       })
       .catch(() => setEvents([]));
   }, []);
 
-  const year = academicStartYear();
+  // Admin: make a year the one the homepage shows. Nothing is deleted - older years stay in the archive.
+  const setHomepageYear = async (y) => {
+    try {
+      await API.put("/api/settings/calendar-year", { value: y });
+      setCurrentYear(y);
+      setViewYear(y);
+      setSemester(1);
+      setEditing(null);
+    } catch (err) {
+      alert("Couldn't change the academic year: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const startNewYear = () => {
+    const next = currentYear + 1;
+    if (
+      window.confirm(
+        `Start the ${yearLabel(next)} academic year?\n\nThe homepage calendar will start fresh for ${yearLabel(next)}. ` +
+          `Nothing is deleted: all ${yearLabel(currentYear)} events stay saved, and you can switch back any time.`
+      )
+    ) {
+      setHomepageYear(next);
+    }
+  };
+
+  const year = viewYear;
   const semEvents = useMemo(
     () =>
       events
-        .filter((e) => e.semester === semester)
+        .filter((e) => e.semester === semester && academicYearOf(e.date) === viewYear)
         .sort((a, b) => new Date(a.date) - new Date(b.date)),
-    [events, semester]
+    [events, semester, viewYear]
   );
 
   const startEdit = (ev) => {
@@ -67,7 +108,15 @@ export default function SocietyCalendar() {
     setForm(
       ev
         ? { ...ev, date: toInput(ev.date) }
-        : { semester, date: "", title: "", time: "", location: "", description: "" }
+        : {
+            semester,
+            // start the date picker in the right year
+            date: `${semester === 1 ? viewYear : viewYear + 1}-${semester === 1 ? "09" : "01"}-01`,
+            title: "",
+            time: "",
+            location: "",
+            description: "",
+          }
     );
   };
 
@@ -164,7 +213,7 @@ export default function SocietyCalendar() {
           <span className="text-[11px] uppercase tracking-[0.3em] text-gray-400 font-medium">What's on</span>
           <h2 className="text-4xl md:text-5xl font-serif text-[#011145] mt-2">The Society Calendar</h2>
           <p className="text-gray-500 mt-3 text-base md:text-lg">
-            Everything we've got planned for the {year}–{String(year + 1).slice(2)} academic year.
+            Everything we've got planned for the {yearLabel(year)} academic year.
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -239,11 +288,58 @@ export default function SocietyCalendar() {
               onClick={() => {
                 setEditMode(!editMode);
                 setEditing(null);
+                setViewYear(currentYear);
               }}
               className={`mt-5 ${editMode ? btnSolid : btnOutline}`}
             >
               {editMode ? "Done editing" : "Edit calendar"}
             </button>
+          )}
+
+          {isAdmin && editMode && (
+            <div className="mt-5 border border-[#011145]/20 bg-[#f7f8fb] p-4">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-gray-400">Academic year</span>
+              <div className="flex items-center justify-between mt-2">
+                <button
+                  type="button"
+                  aria-label="Previous academic year"
+                  onClick={() => {
+                    setViewYear(viewYear - 1);
+                    setEditing(null);
+                  }}
+                  className={btnOutline}
+                >
+                  ‹
+                </button>
+                <span className="font-serif text-xl text-[#011145]">
+                  {yearLabel(viewYear)}
+                  {viewYear === currentYear && <span className="block text-[10px] font-sans text-gray-500 text-center">On homepage</span>}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Next academic year"
+                  onClick={() => {
+                    setViewYear(viewYear + 1);
+                    setEditing(null);
+                  }}
+                  className={btnOutline}
+                >
+                  ›
+                </button>
+              </div>
+              {viewYear === currentYear ? (
+                <button type="button" onClick={startNewYear} className={`${btnOutline} w-full mt-3`}>
+                  Start new academic year ({yearLabel(currentYear + 1)})
+                </button>
+              ) : (
+                <button type="button" onClick={() => setHomepageYear(viewYear)} className={`${btnSolid} w-full mt-3`}>
+                  Show {yearLabel(viewYear)} on the homepage
+                </button>
+              )}
+              <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                Nothing is ever deleted. Older years stay saved here, and you can switch back any time.
+              </p>
+            </div>
           )}
         </div>
 
