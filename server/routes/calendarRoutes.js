@@ -111,6 +111,8 @@ async function seedOnce() {
     }
 }
 
+const router = express.Router();
+
 // Only accept the fields we expect, tidied up
 function clean(body) {
     const out = {};
