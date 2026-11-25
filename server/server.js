@@ -13,6 +13,7 @@ import pollRoutes from "./routes/pollRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import videoRoutes from "./routes/videoRoutes.js";
+import calendarRoutes from "./routes/calendarRoutes.js";
 
 
 dotenv.config();
@@ -46,6 +47,7 @@ app.use("/api/polls", pollRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/videos", videoRoutes);
+app.use("/api/calendar", calendarRoutes);
 
 // Test route
 app.get("/", (req,res)=>{

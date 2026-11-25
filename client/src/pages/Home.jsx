@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useHeroPhoto, ChangeHeroPhotoButton } from "../components/HeroPhoto";
+import SocietyCalendar from "../components/SocietyCalendar";
 import { formatEventDate, isPastEvent } from "../utils/eventDate";
 
 const CATEGORY_LABELS = {
@@ -174,6 +175,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* SOCIETY CALENDAR */}
+      <SocietyCalendar />
 
       {/* CUSTOM SECTIONS (created on the blog page) */}
       {customSections.map((sec) => (
