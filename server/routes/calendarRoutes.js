@@ -42,19 +42,74 @@ const STARTER_EVENTS = [
     },
 ];
 
+// Semester 1 2026-27: events that already happened (shown as "Past")
+const SEMESTER_ONE_EVENTS = [
+    {
+        semester: 1,
+        date: "2026-09-23",
+        title: "Sports and Society Sign-Up Day",
+        time: "TBC",
+        location: "DkIT campus",
+        description: "Where it all started for the year. New members, new faces and a very busy stall.",
+    },
+    {
+        semester: 1,
+        date: "2026-10-01",
+        title: "International Welcome Party",
+        time: "TBC",
+        location: "Mo Chara",
+        description: "Welcoming our international students to DkIT and to Dundalk.",
+    },
+    {
+        semester: 1,
+        date: "2026-10-13",
+        title: "Customise Your Own: DkIT Fashion Society x DkIT Knitting & Crocheting Society",
+        time: "5:30pm",
+        location: "H202",
+        description: "Crochet covers for earphones, chargers and headphones, with a little help from our crafty friends.",
+    },
+    {
+        semester: 1,
+        date: "2026-10-20",
+        title: "The Ghoulish Gala",
+        time: "7:30pm",
+        location: "Toale's Bar",
+        description: "Halloween dress-up, karaoke and some truly frightening looks.",
+    },
+    {
+        semester: 1,
+        date: "2026-11-24",
+        title: "Christmas and Chill: Tote Bag Customisation",
+        time: "TBC",
+        location: "TBC",
+        description: "Paint, ribbon, a glue gun and one unfortunate Red Bull.",
+    },
+];
+
+// Each batch of starter events is added once (tracked by a setting), and only if
+// an event with the same name isn't already there. Deleting one later won't bring it back.
+const SEEDS = [
+    { key: "calendar-seeded", events: STARTER_EVENTS, onlyIfEmpty: true },
+    { key: "calendar-seeded-sem1-2026", events: SEMESTER_ONE_EVENTS },
+];
+
 let seedChecked = false;
 async function seedOnce() {
     if (seedChecked) return;
     seedChecked = true;
-    const done = await Setting.findOne({ key: "calendar-seeded" });
-    if (done) return;
-    if ((await CalendarEvent.countDocuments()) === 0) {
-        await CalendarEvent.insertMany(STARTER_EVENTS);
+    for (const seed of SEEDS) {
+        if (await Setting.findOne({ key: seed.key })) continue;
+        if (seed.onlyIfEmpty && (await CalendarEvent.countDocuments()) > 0) {
+            await Setting.create({ key: seed.key, value: true });
+            continue;
+        }
+        for (const ev of seed.events) {
+            const exists = await CalendarEvent.exists({ title: ev.title });
+            if (!exists) await CalendarEvent.create(ev);
+        }
+        await Setting.create({ key: seed.key, value: true });
     }
-    await Setting.create({ key: "calendar-seeded", value: true });
 }
-
-const router = express.Router();
 
 // Only accept the fields we expect, tidied up
 function clean(body) {
